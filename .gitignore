@@ -4,6 +4,9 @@ Pipfile
 # The first lab was warmup
 00
 
+# The photometric images are 200MB, so don't include
+01/lab1/photometric/photometrics_images/
+
 # No bloaty zip or pdf files (mostly provided by course)
 **/*.pdf
 **/*.zip
