@@ -1,3 +1,13 @@
+# No pipfile
+Pipfile
+
+# The first lab was warmup
+00
+
+# No bloaty zip or pdf files (mostly provided by course)
+**/*.pdf
+**/*.zip
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
