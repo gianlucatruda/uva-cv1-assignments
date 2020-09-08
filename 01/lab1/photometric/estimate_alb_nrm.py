@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def estimate_alb_nrm(image_stack, scriptV, shadow_trick=True):
+def estimate_alb_nrm(image_stack, scriptV, shadow_trick=False):
 
     # COMPUTE_SURFACE_GRADIENT compute the gradient of the surface
     # INPUT:
@@ -39,12 +39,16 @@ def estimate_alb_nrm(image_stack, scriptV, shadow_trick=True):
             # stack image values into a vector i
             i = image_stack[x, y, :]
 
-            # construct diagonal matrix scriptI
-            scripti = np.diag(i)
-
-            # Multiply left (A) and right (B) sides by scriptI
-            A = np.dot(scripti, scriptV)
-            B = np.dot(scripti, i)
+            if shadow_trick:
+                # construct diagonal matrix scriptI
+                scripti = np.diag(i)
+                # Multiply left (A) and right (B) sides by scriptI
+                A = np.dot(scripti, scriptV)
+                B = np.dot(scripti, i)
+            else:
+                # Use the standard `i = V . g` formula
+                A = scriptV
+                B = i
 
             # solve scriptI * scriptV * g = scriptI * i to obtain g for this point (usine least squares)
             g = np.linalg.lstsq(A, B, rcond=None)[0]
