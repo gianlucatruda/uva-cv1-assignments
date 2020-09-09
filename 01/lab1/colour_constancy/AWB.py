@@ -20,7 +20,7 @@ def srgb_to_linsrgb(srgb):
     """
     gamma = ((srgb + 0.055) / 1.055)**2.4
     scale = srgb / 12.92
-    return np.where(srgb > 0.04045, gamma, scale)
+    return np.where(srgb > 0.0031308, gamma, scale)
 
 
 def greyworld_correction(img):
@@ -35,34 +35,33 @@ def greyworld_correction(img):
     # Linearise the JPG input
     # https://stackoverflow.com/questions/12524623/what-are-the-practical-differences-when-working-with-colors-in-a-linear-vs-a-no/12894053#12894053
     # _img = np.array(list(map(srgb_to_linsrgb, _img)))
-    print(_img.shape)
+    # print(_img.shape)
 
     # Convert RBG to xyz (LMS) space with a transformation matrix (von Kries)
     # https://ixora.io/projects/colorblindness/color-blindness-simulation-research/
-    A = np.array([[0.4124564, 0.3575761, 0.1804375],
-                  [0.2126729, 0.7151522, 0.0721750],
-                  [0.0193339, 0.1191920, 0.9503041]])
+    B = np.array(
+        [[0.31399022, 0.15537241, 0.01775239],
+         [0.63951294, 0.75789446, 0.10944209],
+         [0.04649755, 0.08670142, 0.87256922]])
 
-    # Apply the RGB -> xyz transformation to iamge using python's dot operator
-    _img = A @ _img
+    # Apply the RGB -> LMS transformation to iamge using python's dot operator
+    _img = B @ _img
 
     # Calculate the average colour value for each channel
     mean_rgb = np.mean(_img, axis=1)
 
+    f = 2.0  # Scaling factor that depends on scene
     # Loop through the RGB values and apply greyworld adjustments (divide RGB by mean RGB)
     adj_img = []
     for pixel in _img.T:
         adj_img.append([
-            pixel[0] / mean_rgb[0],
-            pixel[1] / mean_rgb[1],
-            pixel[2] / mean_rgb[2],
+            pixel[0] / (f * mean_rgb[0]),
+            pixel[1] / (f * mean_rgb[1]),
+            pixel[2] / (f * mean_rgb[2]),
         ])
 
     # Convert the list of output pixels to an array and transpose
     adj_img = np.array(adj_img).T
-
-    # Map back to RGB colourspace for output using inverse of von Kries matrix
-    adj_img = np.linalg.inv(A) @ adj_img
 
     # Reshape into a 2D image
     adj_img = adj_img.T.reshape(original_shape)
@@ -71,12 +70,18 @@ def greyworld_correction(img):
 
 
 if __name__ == "__main__":
-    IMG_PATH = Path('awb.jpg')
+    IMG_PATH = Path('awb.png')
 
     # Read the image
     img = plt.imread(IMG_PATH)
     print(f"{IMG_PATH}: {img.shape}")
     conv_img = greyworld_correction(img)
+
+    # Calculate average pixel values for both images
+    M, N = img.shape[0], img.shape[1]
+    mean_rgb_orig = np.mean(img.reshape(M*N, 3).T, axis=1)
+    mean_rgb_conv = np.mean(conv_img.reshape(M*N, 3).T, axis=1)
+    print(mean_rgb_orig, mean_rgb_conv)
 
     fig, axes = plt.subplots(1, 2)
     axes[0].imshow(img)
