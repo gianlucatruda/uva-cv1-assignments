@@ -70,4 +70,8 @@ if __name__ == "__main__":
     axes[0].imshow(img)
     axes[1].imshow(conv_img)
 
+    # Remove axes and fill the available space
+    axes[0].axis('off')
+    axes[1].axis('off')
+    plt.tight_layout()
     plt.show()
