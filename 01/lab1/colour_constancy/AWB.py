@@ -22,10 +22,13 @@ def greyworld_correction(img):
 
     # Convert RBG to xyz (LMS) space with a transformation matrix (von Kries)
     # https://ixora.io/projects/colorblindness/color-blindness-simulation-research/
-    B = np.array(
-        [[0.31399022, 0.15537241, 0.01775239],
-         [0.63951294, 0.75789446, 0.10944209],
-         [0.04649755, 0.08670142, 0.87256922]])
+    B = np.array([[0.31399022, 0.63951294, 0.04649755],
+                  [0.15537241, 0.75789446, 0.08670142],
+                  [0.01775239, 0.10944209, 0.87256922]])
+
+    B_inv = np.array([[5.47221205, -4.64196011,  0.16963706],
+                      [-1.12524192,  2.29317097, -0.1678952],
+                      [0.02980163, -0.1931807,  1.1636479]])
 
     # Apply the RGB -> LMS transformation to iamge using python's dot operator
     _img = B @ _img
@@ -45,6 +48,9 @@ def greyworld_correction(img):
 
     # Convert the list of output pixels to an array and transpose
     adj_img = np.array(adj_img).T
+
+    # Convert back to RGB colourspace
+    adj_img = B_inv @ adj_img
 
     # Reshape into a 2D image
     adj_img = adj_img.T.reshape(original_shape)
