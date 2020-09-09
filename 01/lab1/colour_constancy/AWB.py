@@ -11,18 +11,6 @@ For the calculation or processing, you are not allowed to use any available code
 """
 
 
-def srgb_to_linsrgb(srgb):
-    """Convert sRGB values to physically linear ones. The transformation is
-       uniform in RGB, so *srgb* can be of any shape.
-
-       https://stackoverflow.com/questions/57033168/how-to-convert-from-srgb-to-linear-srgb-for-computing-the-color-correction-matri
-
-    """
-    gamma = ((srgb + 0.055) / 1.055)**2.4
-    scale = srgb / 12.92
-    return np.where(srgb > 0.0031308, gamma, scale)
-
-
 def greyworld_correction(img):
     _img = img.copy()
     original_shape = _img.shape
@@ -31,11 +19,6 @@ def greyworld_correction(img):
     # Reshape image to (3, MN) — list of RGB 3-tuples, tranposed
     _img = _img.reshape(M*N, 3).T
     print(_img.shape)
-
-    # Linearise the JPG input
-    # https://stackoverflow.com/questions/12524623/what-are-the-practical-differences-when-working-with-colors-in-a-linear-vs-a-no/12894053#12894053
-    # _img = np.array(list(map(srgb_to_linsrgb, _img)))
-    # print(_img.shape)
 
     # Convert RBG to xyz (LMS) space with a transformation matrix (von Kries)
     # https://ixora.io/projects/colorblindness/color-blindness-simulation-research/
@@ -70,7 +53,7 @@ def greyworld_correction(img):
 
 
 if __name__ == "__main__":
-    IMG_PATH = Path('awb.png')
+    IMG_PATH = Path('awb.jpg')
 
     # Read the image
     img = plt.imread(IMG_PATH)
