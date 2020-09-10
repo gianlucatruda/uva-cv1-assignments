@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import imageio
 from getColourChannels import *
 
 def rgb2grays(input_image):
