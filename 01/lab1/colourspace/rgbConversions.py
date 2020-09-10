@@ -33,8 +33,6 @@ def rgb2grays(input_image):
 def rgb2opponent(input_image):
     # converts an RGB image into opponent colour space
 
-    print(input_image.shape)
-
     R, G, B = getColourChannels(input_image)
 
     O1 = (R - G) / np.sqrt(2)

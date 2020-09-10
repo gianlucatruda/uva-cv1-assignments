@@ -46,7 +46,6 @@ def ConvertColourSpace(input_image, colourspace):
         new_image = input_image
 
     visualize(new_image)
-
     return new_image
 
 

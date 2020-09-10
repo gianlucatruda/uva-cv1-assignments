@@ -6,8 +6,6 @@ import matplotlib
 
 
 def visualize(input_image):
-    # Fill in this function. Remember to remove the pass command
-
     new_im = input_image.astype(np.uint8)
 
     # For visualization of gray:
