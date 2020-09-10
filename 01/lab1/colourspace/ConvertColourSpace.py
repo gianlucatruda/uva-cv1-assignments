@@ -59,4 +59,4 @@ if __name__ == '__main__':
     # This is a shorthand.
     I = I[:, :, ::-1]
 
-    out_img = ConvertColourSpace(I, 'gray')
+    out_img = ConvertColourSpace(I, 'rgb')

@@ -5,37 +5,29 @@ from getColourChannels import *
 def rgb2grays(input_image):
     # converts an RGB into grayscale by using 4 different methods
 
-    method = "average"
-
     R, G, B = getColourChannels(input_image)
 
 
-    if method == "light":
-        #lightness method
+    light = (input_image.max(axis=2) + input_image.min(axis=2)) / 2
+    new_image_l = np.zeros(input_image.shape, dtype='uint8')
+    new_image_l[:, :, 0], new_image_l[:, :, 1], new_image_l[:, :, 2] = light, light, light
 
-        light = (input_image.max(axis=2) + input_image.min(axis=2)) / 2
-        new_image = np.zeros(input_image.shape, dtype='uint8')
-        new_image[:, :, 0], new_image[:, :, 1], new_image[:, :, 2] = light, light, light
 
-    elif method == "average":
+    # average method
+    average = (R + G + B) / 3
+    new_image_a = np.zeros(input_image.shape, dtype='uint8')
+    new_image_a[:, :, 0], new_image_a[:, :, 1], new_image_a[:, :, 2] = average, average, average
 
-        # average method
-        average = (R + G + B) / 3
-        new_image = np.zeros(input_image.shape, dtype='uint8')
-        new_image[:, :, 0], new_image[:, :, 1], new_image[:, :, 2] = average, average, average
+    # luminosity method
+    luminosity = 0.21 * R + 0.72 * G + 0.07 * B
+    new_image_lu = np.zeros(input_image.shape, dtype='uint8')
+    new_image_lu[:, :, 0], new_image_lu[:, :, 1], new_image_lu[:, :, 2] = luminosity, luminosity, luminosity
 
-    elif method == "luminosity":
-        # luminosity method
-        luminosity = 0.21 * R + 0.72 * G + 0.07 * B
-        new_image = np.zeros(input_image.shape, dtype='uint8')
-        new_image[:, :, 0], new_image[:, :, 1], new_image[:, :, 2] = luminosity, luminosity, luminosity
 
-    else:
-        # built-in opencv function
-        new_image = cv2.cvtColor(input_image, code=cv2.COLOR_RGB2GRAY)
-        print("buildin")
+    # built-in opencv function
+    new_image = cv2.cvtColor(input_image, code=cv2.COLOR_RGB2GRAY)
 
-    return new_image
+    return new_image_l, new_image_a, new_image_lu, new_image
 
 
 def rgb2opponent(input_image):
