@@ -28,18 +28,25 @@ def construct_surface(p, q, path_type='column'):
         %       height_value = previous_height_value + corresponding_p_value
         
         """
+        height_map[:, 0] += np.cumsum(q[:, 0])
+        height_map += np.cumsum(p, axis=1)
+
     elif path_type=='row':
-        """
-        ================
-        Your code here
-        ================
-        """
+        height_map[0] += np.cumsum(p[0])
+        height_map += np.cumsum(q, axis=0)
+
     elif path_type=='average':
-        """
-        ================
-        Your code here
-        ================
-        """
+        h, w = p.shape
+        height_map_rows = np.zeros([h, w])
+        height_map_columns = np.zeros([h, w])
+
+        height_map_rows[:, 0] += np.cumsum(q[:, 0])
+        height_map_rows += np.cumsum(p, axis=1)
+
+        height_map_columns[0] += np.cumsum(p[0])
+        height_map_columns += np.cumsum(q, axis=0)
+
+        height_map = (height_map_rows + height_map_columns)/2
         
     return height_map
         
