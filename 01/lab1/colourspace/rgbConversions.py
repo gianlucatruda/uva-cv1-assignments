@@ -6,7 +6,7 @@ from getColourChannels import *
 def rgb2grays(input_image):
     # converts an RGB into grayscale by using 4 different methods
 
-    method = "light"
+    method = "average"
 
     R, G, B = getColourChannels(input_image)
 
