@@ -27,8 +27,8 @@ def check_integrability(normals):
     q = normals[:, :, 1] / normals[:, :, 2]
 
     # change nan to 0
-    p[p != p] = 0
-    q[q != q] = 0
+    # p[p != p] = 0
+    # q[q != q] = 0
 
     """
     ================
