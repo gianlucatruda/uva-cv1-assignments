@@ -78,6 +78,11 @@ def photometric_stereo_face(image_dir='./yaleB02/'):
 if __name__ == '__main__':
     photometric_stereo('photometrics_images/SphereGray5/', colour=False)
     photometric_stereo('photometrics_images/SphereColor/', colour=True)
-    photometric_stereo('photometrics_images/MonkeyGray/', colour=False)
     photometric_stereo('photometrics_images/MonkeyColor/', colour=True)
+
+    photometric_stereo('photometrics_images/MonkeyGray15/', colour=False)
+    photometric_stereo('photometrics_images/MonkeyGray30/', colour=False)
+    photometric_stereo('photometrics_images/MonkeyGray/', colour=False)
+
     photometric_stereo_face('photometrics_images/yaleB02')
+    photometric_stereo_face('photometrics_images/yaleB02_best')
