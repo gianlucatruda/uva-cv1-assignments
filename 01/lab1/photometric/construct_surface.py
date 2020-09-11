@@ -15,6 +15,7 @@ def construct_surface(p, q, path_type='average'):
     height_map = np.empty([h, w])
 
     if path_type=='column':
+        print(f"Using {path_type} for surface construction.\n")
         """
         ================
         Your code here
@@ -32,10 +33,12 @@ def construct_surface(p, q, path_type='average'):
         height_map += np.nancumsum(p, axis=1)
 
     elif path_type=='row':
+        print(f"Using {path_type} for surface construction.\n")
         height_map[0] += np.nancumsum(p[0])
         height_map += np.nancumsum(q, axis=0)
 
     elif path_type=='average':
+        print(f"Using {path_type} for surface construction.\n")
         h, w = p.shape
         height_map_rows = np.empty([h, w])
         height_map_columns = np.empty([h, w])
