@@ -13,6 +13,9 @@ def estimate_alb_nrm(image_stack, scriptV, shadow_trick=False, colour=False):
     # albedo : the surface albedo
     # normal : the surface normal
 
+    if shadow_trick:
+        print("Using shadow trick!\n")
+
     # Expand dimensions by 1 if grayscale
     if not colour:
         image_stack = np.expand_dims(image_stack, 3)

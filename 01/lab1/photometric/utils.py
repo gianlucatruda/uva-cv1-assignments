@@ -128,5 +128,7 @@ def show_results(albedo, normals, height_map, SE):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.plot_surface(X,Y, H.T)
+    z_dim = np.max([len(X), len(Y)])
+    ax.set_zlim(0, 0.25*z_dim)
     plt.show()
 
