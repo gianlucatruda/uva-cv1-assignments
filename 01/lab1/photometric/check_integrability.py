@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def check_integrability(normals):
     #  CHECK_INTEGRABILITY check the surface gradient is acceptable
     #   normals: normal image
@@ -19,6 +20,7 @@ def check_integrability(normals):
     Compute p and q, where
     p measures value of df / dx
     q measures value of df / dygs
+
     """
 
     p = normals[:, :, 0] / normals[:, :, 2]
@@ -34,6 +36,7 @@ def check_integrability(normals):
     ================
     approximate second derivate by neighbor difference
     and compute the Squared Errors SE of the 2 second derivatives SE
+
     """
 
     dp_dx, dp_dy = np.gradient(p)
