@@ -11,6 +11,11 @@ Pipfile
 **/*.pdf
 **/*.zip
 
+# No images for lab1
+01/**/*.jpg
+01/**/*.jpeg
+01/**/*.png
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
