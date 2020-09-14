@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def check_integrability(normals):
     #  CHECK_INTEGRABILITY check the surface gradient is acceptable
     #   normals: normal image
