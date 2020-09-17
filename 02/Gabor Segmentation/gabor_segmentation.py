@@ -18,7 +18,7 @@ err_msg = 'Image not available.'
 
 # Control settings
 visFlag = False  # Set to true to visualize filter responses.
-smoothingFlag = False  # Set to true to postprocess filter outputs.
+smoothingFlag = True  # Set to true to postprocess filter outputs.
 
 # Read image
 if image_id == 'Kobi':
@@ -211,12 +211,10 @@ if smoothingFlag:
 
     for i, fmag in enumerate(featureMags):
         # i)  filter the magnitude response with appropriate Gaussian kernels
-        # gauss_kernel = gauss2D(5, int(2*np.ceil(2*5)+1))
         gauss_kernel = cv2.getGaussianKernel(int(2*np.ceil(2*5)+1), 5)
         # ii) insert the smoothed image into features[:,:,jj]
-        import ipdb; ipdb.set_trace()
-        features[:, :, i] = cv2.filter2D(featureMags[i], -1, gauss_kernel)
-
+        features[:, :, i] = cv2.filter2D(
+            featureMags[i].astype('float64'), -1, gauss_kernel)
 else:
     # Don't smooth but just insert magnitude images into the matrix
     # called features.
