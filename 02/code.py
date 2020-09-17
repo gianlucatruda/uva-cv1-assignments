@@ -48,24 +48,26 @@ def createGabor(lamb, theta, psi, sigma, gamma):
 if __name__ == "__main__":
     fig, ax = plt.subplots(3, 5)
 
+    cmap = 'gray'
+
     # Theta
     for i, val in enumerate([0, 1, 2, 3, 4]):
         real, im = createGabor(15, pi*val/4, 0, 20, 1)
-        ax[0][i].imshow(real)
+        ax[0][i].imshow(real, cmap=cmap)
         ax[0][i].set_title(r"$\theta$="+str(val)+r"$\frac{\pi}{4}$")
         ax[0][i].axis('off')
 
     # Sigma
     for i, val in enumerate([3, 10, 20, 30, 50]):
         real, im = createGabor(15, pi/2, 0, val, 1)
-        ax[1][i].imshow(real)
+        ax[1][i].imshow(real, cmap=cmap)
         ax[1][i].set_title(r"$\sigma =$"+str(val))
         ax[1][i].axis('off')
 
     # Gamma
     for i, val in enumerate([0.1, 0.5, 1.0, 1.5, 10.0]):
         real, im = createGabor(15, pi/2, 0, 20, val)
-        ax[2][i].imshow(real)
+        ax[2][i].imshow(real, cmap=cmap)
         ax[2][i].set_title(r"$\gamma =$"+str(val))
         ax[2][i].axis('off')
 
