@@ -9,7 +9,7 @@ from createGabor import createGabor, createGauss
 # Hyperparameters
 k = 2      # number of clusters in k-means algorithm. By default,
 # we consider k to be 2 in foreground-background segmentation task.
-image_id = 'Cows'  # Identifier to switch between input images.
+image_id = 'Polar'  # Identifier to switch between input images.
 # Possible ids: 'Kobi',    'Polar', 'Robin-1'
 #               'Robin-2', 'Cows', 'SciencePark'
 
@@ -18,7 +18,7 @@ err_msg = 'Image not available.'
 
 # Control settings
 visFlag = False  # Set to true to visualize filter responses.
-smoothingFlag = True  # Set to true to postprocess filter outputs.
+smoothingFlag = False  # Set to true to postprocess filter outputs.
 
 # Read image
 if image_id == 'Kobi':
@@ -146,9 +146,9 @@ for gaborFilter in gaborFilterBank:
     # of the Gabor Filter and the other one is the imagineray part.
 
     # filter the grayscale input with real part of the Gabor
-    real_out = cv2.filter2D(img_gray, -1, gaborFilter[:, :, 0])
+    real_out = cv2.filter2D(img_gray, -1, gaborFilter['filterPairs'][:, :, 0])
     # filter the grayscale input with imaginary part of the Gabor
-    imag_out = cv2.filter2D(img_gray, -1, gaborFilter[:, :, 1])
+    imag_out = cv2.filter2D(img_gray, -1, gaborFilter['filterPairs'][:, :, 1])
 
     featureMaps.append(np.stack((real_out, imag_out), 2))
 
@@ -169,6 +169,7 @@ for gaborFilter in gaborFilterBank:
             gaborFilter["lmbda"], gaborFilter["theta"], gaborFilter["sigma"])
         ax.set_title(title)
         ax.axis("off")
+        plt.show()
 
 
 # Compute the magnitude
@@ -210,9 +211,11 @@ if smoothingFlag:
 
     for i, fmag in enumerate(featureMags):
         # i)  filter the magnitude response with appropriate Gaussian kernels
-        gauss_kernel = np.gau
+        # gauss_kernel = gauss2D(5, int(2*np.ceil(2*5)+1))
+        gauss_kernel = cv2.getGaussianKernel(int(2*np.ceil(2*5)+1), 5)
         # ii) insert the smoothed image into features[:,:,jj]
-        features[:, :, i] = cv2.filter2D(featureMags[i], -1, createGauss())
+        import ipdb; ipdb.set_trace()
+        features[:, :, i] = cv2.filter2D(featureMags[i], -1, gauss_kernel)
 
 else:
     # Don't smooth but just insert magnitude images into the matrix
@@ -231,9 +234,10 @@ features = np.reshape(features, newshape=(numRows * numCols, -1))
 # Standardize features.
 # \\ Hint: see http://ufldl.stanford.edu/wiki/index.php/Data_Preprocessing for more information.
 
-# features = # \\ TODO: i)  Implement standardization on matrix called features.
-#          ii) Return the standardized data matrix.
+#  i)  Implement standardization on matrix called features.
+#  ii) Return the standardized data matrix.
 
+features = (features - np.mean(features)) / np.std(features)
 
 # (Optional) Visualize the saliency map using the first principal component
 # of the features matrix. It will be useful to diagnose possible problems
@@ -256,7 +260,13 @@ plt.axis("off")
 # \\ Hint-2: use the parameter k defined in the first section when calling
 #            sklearn's built-in kmeans function.
 tic = time.time()
-# pixLabels = # \\TODO: Return cluster labels per pixel
+
+from sklearn.cluster import KMeans
+kmeans_trans = KMeans(n_clusters=k)
+
+# Return cluster labels per pixel
+pixLabels = kmeans_trans.fit_predict(features)
+
 ctime = time.time() - tic
 print(f'Clustering completed in {ctime} seconds.')
 
@@ -283,3 +293,4 @@ plt.title(f'montage')
 plt.imshow(Aseg1, 'gray', interpolation='none')
 plt.imshow(Aseg2, 'jet',  interpolation='none', alpha=0.7)
 plt.axis("off")
+plt.show()
