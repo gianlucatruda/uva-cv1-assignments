@@ -26,8 +26,10 @@ def createGabor(lamb, theta, psi, sigma, gamma):
     def gabor(x, y, lamb, theta, psi, sigma, gamma):
         x_prime = x * np.cos(theta) + y * np.sin(theta)
         y_prime = -x * np.sin(theta) + y * np.cos(theta)
-        g_real = gaussian(x_prime, y_prime, sigma, gamma) * np.cos(carrier(x_prime, lamb, psi))
-        g_im = gaussian(x_prime, y_prime, sigma, gamma) * np.sin(carrier(x_prime, lamb, psi))
+        g_real = gaussian(x_prime, y_prime, sigma, gamma) * \
+            np.cos(carrier(x_prime, lamb, psi))
+        g_im = gaussian(x_prime, y_prime, sigma, gamma) * \
+            np.sin(carrier(x_prime, lamb, psi))
 
         return g_real, g_im
 
@@ -37,7 +39,8 @@ def createGabor(lamb, theta, psi, sigma, gamma):
     for x in range(-width // 2, width // 2):
         for y in range(-height // 2, height // 2):
             xoff, yoff = width // 2, height // 2
-            real[x+xoff, y+yoff], im[x+xoff, y+yoff] = gabor(x, y, lamb, theta, psi, sigma, gamma)
+            real[x+xoff, y+yoff], im[x+xoff, y +
+                                     yoff] = gabor(x, y, lamb, theta, psi, sigma, gamma)
 
     return real, im
 
@@ -46,26 +49,25 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(3, 5)
 
     # Theta
-    for i, val in enumerate([0, pi/4, 2*pi/2, 3*pi/4, pi]):
-        real, im = createGabor(15, val, 0, 30, 1)
+    for i, val in enumerate([0, 1, 2, 3, 4]):
+        real, im = createGabor(15, pi*val/4, 0, 20, 1)
         ax[0][i].imshow(real)
+        ax[0][i].set_title(r"$\theta$="+str(val)+r"$\frac{\pi}{4}$")
         ax[0][i].axis('off')
 
     # Sigma
-    for i, val in enumerate([3, 10, 30, 100, 300]):
-        real, im = createGabor(15, 0, 0, val, 1)
+    for i, val in enumerate([3, 10, 20, 30, 50]):
+        real, im = createGabor(15, pi/2, 0, val, 1)
         ax[1][i].imshow(real)
+        ax[1][i].set_title(r"$\sigma =$"+str(val))
         ax[1][i].axis('off')
 
     # Gamma
     for i, val in enumerate([0.1, 0.5, 1.0, 1.5, 10.0]):
-        real, im = createGabor(15, 0, 0, 30, val)
+        real, im = createGabor(15, pi/2, 0, 20, val)
         ax[2][i].imshow(real)
+        ax[2][i].set_title(r"$\gamma =$"+str(val))
         ax[2][i].axis('off')
-
-
-    # ax[0].imshow(real, cmap="gray")
-    # ax[1].imshow(im, cmap="gray")
 
     plt.tight_layout()
     plt.show()
