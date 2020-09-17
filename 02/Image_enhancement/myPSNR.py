@@ -7,9 +7,11 @@ def myPSNR(orig_image, approx_image ):
 
     I_MAX = 255
 
-    or_image = orig_image.astype(np.float64)
-    app_image = approx_image.astype(np.float64)
+    or_image = orig_image.astype(np.uint8)
+    app_image = approx_image.astype(np.uint8)
     mse = np.mean((or_image - app_image) ** 2)
+    if mse == 0:
+        return float('inf')
     PSNR = 20 * math.log((I_MAX / math.sqrt(mse)), 10)
     return PSNR
 
