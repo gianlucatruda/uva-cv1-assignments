@@ -69,7 +69,6 @@ def createGabor(sigma, theta, lamda, psi, gamma):
     # modulate gaussianEnv with sinCarrier
     myGabor_imaginary = gaussianEnv * sinCarrier
 
-
     # Pack myGabor_real and myGabor_imaginary into myGabor.
     h, w = myGabor_real.shape
     myGabor = np.zeros((h, w, 2))
@@ -77,17 +76,17 @@ def createGabor(sigma, theta, lamda, psi, gamma):
     myGabor[:, :, 1] = myGabor_imaginary
 
     # Uncomment below line to see how are the gabor filters
-    plt.imshow(myGabor_real)
-    plt.imshow(myGabor_imaginary)
+    # plt.imshow(myGabor_real)
+    # plt.imshow(myGabor_imaginary)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 2, 1)
-    ax.imshow(myGabor_real)    # Real
-    ax.axis("off")
-    ax = fig.add_subplot(1, 2, 2)
-    ax.imshow(myGabor_imaginary)    # Real
-    ax.axis("off")
-    plt.show()
+    # fig = plt.figure()
+    # ax = fig.add_subplot(1, 2, 1)
+    # ax.imshow(myGabor_real)    # Real
+    # ax.axis("off")
+    # ax = fig.add_subplot(1, 2, 2)
+    # ax.imshow(myGabor_imaginary)    # Real
+    # ax.axis("off")
+    # plt.show()
     return myGabor
 
 
@@ -146,10 +145,33 @@ def createGauss(rot_x, rot_y, gamma, sigma):
 
 if __name__ == "__main__":
 
-    sigma = 20
-    theta = pi
-    lamda = 15
-    psi = 0
-    gamma = 1
+    fig, ax = plt.subplots(3, 5)
 
-    createGabor(sigma, theta, lamda, psi, gamma)
+    cmap = 'gray'
+
+    # Theta
+    for i, val in enumerate([0, 1, 2, 3, 4]):
+        real = createGabor(lamda=15, theta=pi*val/4, psi=0,
+                           sigma=20, gamma=1)[..., 0]
+        ax[0][i].imshow(real, cmap=cmap)
+        ax[0][i].set_title(r"$\theta$="+str(val)+r"$\frac{\pi}{4}$")
+        ax[0][i].axis('off')
+
+    # Sigma
+    for i, val in enumerate([3, 10, 20, 30, 50]):
+        real = createGabor(lamda=15, theta=pi/2, psi=0,
+                           sigma=val, gamma=1)[..., 0]
+        ax[1][i].imshow(real, cmap=cmap)
+        ax[1][i].set_title(r"$\sigma =$"+str(val))
+        ax[1][i].axis('off')
+
+    # Gamma
+    for i, val in enumerate([0.1, 0.5, 1.0, 1.5, 10.0]):
+        real = createGabor(lamda=15, theta=pi/2, psi=0,
+                           sigma=20, gamma=val)[..., 0]
+        ax[2][i].imshow(real, cmap=cmap)
+        ax[2][i].set_title(r"$\gamma =$"+str(val))
+        ax[2][i].axis('off')
+
+    plt.tight_layout()
+    plt.show()
