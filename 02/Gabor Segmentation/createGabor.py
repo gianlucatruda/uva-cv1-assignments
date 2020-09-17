@@ -50,6 +50,7 @@ def createGabor(sigma, theta, lamda, psi, gamma):
     # \\ Hint: Use the rotation matrix to compute the rotated pixel coordinates: rot(theta) * XY.
     rotMat = generateRotationMatrix(theta)
     rot_XY = np.matmul(rotMat, XY)
+    # TODO I think this is wrong. Should be column-vectors, not row-vectors
     rot_x = rot_XY[0, :]
     rot_y = rot_XY[1, :]
 
