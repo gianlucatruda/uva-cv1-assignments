@@ -14,3 +14,12 @@ def gauss1D(sigma, kernel_size):
 
 if __name__ == '__main__':
     print(gauss1D(2,5))
+
+    import matplotlib.pyplot as plt
+    sin = np.sin(np.linspace(-10,10,200)) + np.random.normal(0, 0.3, 200)
+    gaussed = np.convolve(sin, gauss1D(2, 5))
+    plt.subplot(1,2,1)
+    plt.plot(sin)
+    plt.subplot(1,2,2)
+    plt.plot(gaussed)
+    plt.show()
