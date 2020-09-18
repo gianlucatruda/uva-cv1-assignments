@@ -105,6 +105,8 @@ def main(k=2, smoothing_flag=True, standard=True, image='Kobi',
 
     if gabor_sigmas is None:
         sigmas = np.array([1, 2])
+    else:
+        sigmas = np.array(gabor_sigmas)
 
     # Notify user what the configurations are
     print(f"Lambdas: {lambdas}")
@@ -334,13 +336,12 @@ if __name__ == '__main__':
     images = ['Kobi', 'Polar', 'Robin-1', 'Robin-2', 'Cows', 'SciencePark']
 
     lambdas = None
-    # thetas = np.linspace(-pi, pi, 8)
     thetas = None
     gabor_sigmas = None
 
     gauss_sigma = 1
 
-    fig, ax = plt.subplots(len(images), 2)
+    fig, ax = plt.subplots(len(images), 3, figsize=(5, 7))
     for i, img in enumerate(images):
         img_raw, img, Aseg1, Aseg2 = main(
             k=2,
@@ -355,7 +356,8 @@ if __name__ == '__main__':
         ax[i][0].imshow(img_raw)
         ax[i][0].axis("off")
         ax[i][1].imshow(Aseg1, 'gray', interpolation='none')
-        ax[i][1].imshow(Aseg2, 'jet',  interpolation='none', alpha=0.25)
         ax[i][1].axis("off")
+        ax[i][2].imshow(Aseg2, 'gray',  interpolation='none')
+        ax[i][2].axis("off")
     plt.tight_layout()
     plt.show()
