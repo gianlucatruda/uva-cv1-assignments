@@ -3,7 +3,6 @@ import math
 import cv2
 
 def myPSNR(orig_image, approx_image ):
-    #pseudocode
 
     I_MAX = 255
 

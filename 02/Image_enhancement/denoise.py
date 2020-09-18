@@ -6,10 +6,6 @@ from myPSNR import *
 
 def denoise(image, kernel_type, kernel_size):
     image_ready = image.astype(np.uint8)
-    # kernel_size = (image.shape[0], image.shape[1])
-    # kernel_size = (3, 3)
-    # kernel_size = (5, 5)
-    # kernel_size = (7, 7)
 
     if kernel_type == 'box':
         imOut = cv2.blur(image_ready, (kernel_size, kernel_size), cv2.BORDER_DEFAULT)
@@ -23,8 +19,7 @@ def denoise(image, kernel_type, kernel_size):
 
 
 if __name__ == "__main__":
-    # img_paths = ['images/image1_saltpepper.jpg', 'images/image1_gaussian.jpg']
-    # kernel_types = ['box', 'median']
+    # Get all possible combinations to test.
     img_paths = ['images/image1_saltpepper.jpg', 'images/image1_gaussian.jpg']
     kernel_types = ['box', 'median']
     kernel_sizes = [3, 5, 7]
@@ -54,17 +49,6 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig("denoise.jpeg")
     plt.show()
-
-
-    # Decide on kernel type
-    # kernel_type = 'box'
-    # kernel_type = 'median'
-    # kernel_type = 'gaussian'
-
-    # Read with opencv
-    # image = cv2.imread(img1_path)
-    # image = cv2.imread(img2_path)
-    # image = cv2.imread(img3_path)
 
 
 
