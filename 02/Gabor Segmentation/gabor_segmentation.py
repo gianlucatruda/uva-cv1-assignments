@@ -353,7 +353,7 @@ if __name__ == '__main__':
             'lambdas': [2.82842712, 22.627417, 90.50966799], 'thetas': None, 'gabor_sigmas': [0.5, 0.75, 1.0], 'gauss_sigma': 20,
         },
         'Cows': {
-            'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
+            'lambdas': [2.82842712, 5.65685425], 'thetas': None, 'gabor_sigmas': [0.25, 0.5, 0.75, 1.5, 2.0, ], 'gauss_sigma': 6,
         },
         'SciencePark': {
             'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
