@@ -1,13 +1,19 @@
 import cv2
 import matplotlib.pyplot as plt
 import math
+from math import pi
 import numpy as np
 import time
 import sklearn
 
 from createGabor import createGabor, createGauss
 
-def main(k=2, smoothing_flag=True, standard=True, image='kobi', gauss_sigma=5):
+
+def main(k=2, smoothing_flag=True, standard=True, image='Kobi',
+         gauss_sigma=5,
+         lambdas=None,
+         gabor_sigmas=None,
+         thetas=None,):
 
     # Hyperparameters
     # k = 2      # number of clusters in k-means algorithm. By default,
@@ -22,11 +28,12 @@ def main(k=2, smoothing_flag=True, standard=True, image='kobi', gauss_sigma=5):
 
     # Control settings
     visFlag = False  # Set to true to visualize filter responses.
-    smoothingFlag = smoothing_flag  # Set to true to postprocess filter outputs.
+    # Set to true to postprocess filter outputs.
+    smoothingFlag = smoothing_flag
 
     # Read image
     if image_id == 'Kobi':
-        img = cv2.imread('./data/kobi.png')
+        img = cv2.imread('./data/kobi2.png')
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         resize_factor = 0.25
     elif image_id == 'Polar':
@@ -83,15 +90,21 @@ def main(k=2, smoothing_flag=True, standard=True, image='kobi', gauss_sigma=5):
     # Specify the carrier wavelengths.
     # (or the central frequency of the carrier signal, which is 1/lambda)
     n = np.floor(np.log2(lambdaMax/lambdaMin))
-    lambdas = 2**np.arange(0, (n-2)+1) * lambdaMin
+    if lambdas is None:
+        lambdas = 2**np.arange(0, (n-2)+1) * lambdaMin
 
     # Define the set of orientations for the Gaussian envelope.
     dTheta = 2 * np.pi/8                  # \\ the step size
-    orientations = np.arange(0, np.pi+dTheta, dTheta)
+    if thetas is None:
+        orientations = np.arange(0, np.pi+dTheta, dTheta)
+    else:
+        orientations = thetas
 
     # Define the set of sigmas for the Gaussian envelope. Sigma here defines
     # the standard deviation, or the spread of the Gaussian.
-    sigmas = np.array([1, 2])
+
+    if gabor_sigmas is None:
+        sigmas = np.array([1, 2])
 
     # Notify user what the configurations are
     print(f"Lambdas: {lambdas}")
@@ -221,7 +234,8 @@ def main(k=2, smoothing_flag=True, standard=True, image='kobi', gauss_sigma=5):
 
         for i, fmag in enumerate(featureMags):
             # i)  filter the magnitude response with appropriate Gaussian kernels
-            gauss_vec = cv2.getGaussianKernel(int(2*np.ceil(2*5)+1), gauss_sigma)
+            gauss_vec = cv2.getGaussianKernel(
+                int(2*np.ceil(2*5)+1), gauss_sigma)
             gauss_kernel = gauss_vec * gauss_vec.T
             # ii) insert the smoothed image into features[:,:,jj]
             features[:, :, i] = cv2.filter2D(
@@ -232,13 +246,11 @@ def main(k=2, smoothing_flag=True, standard=True, image='kobi', gauss_sigma=5):
         for i, fmag in enumerate(featureMags):
             features[:, :, i] = fmag
 
-
     # Reshape the filter outputs (i.e. tensor called features) of size
     # [numRows, numCols, numFilters] into a matrix of size [numRows*numCols, numFilters]
     # This will constitute our data matrix which represents each pixel in the
     # input image with numFilters features.
     features = np.reshape(features, newshape=(numRows * numCols, -1))
-
 
     # Standardize features.
     # \\ Hint: see http://ufldl.stanford.edu/wiki/index.php/Data_Preprocessing for more information.
@@ -256,7 +268,8 @@ def main(k=2, smoothing_flag=True, standard=True, image='kobi', gauss_sigma=5):
         features)  # select the first component
     transformed_feature = np.ascontiguousarray(
         transformed_feature, dtype=np.float32)
-    feature2DImage = np.reshape(transformed_feature, newshape=(numRows, numCols))
+    feature2DImage = np.reshape(
+        transformed_feature, newshape=(numRows, numCols))
     if standard:
         plt.figure()
         plt.title(f'Pixel representation projected onto first PC')
@@ -279,7 +292,6 @@ def main(k=2, smoothing_flag=True, standard=True, image='kobi', gauss_sigma=5):
 
     ctime = time.time() - tic
     print(f'Clustering completed in {ctime} seconds.')
-
 
     # Visualize the clustering by reshaping pixLabels into original grayscale
     # input size [numRows numCols].
@@ -310,6 +322,7 @@ def main(k=2, smoothing_flag=True, standard=True, image='kobi', gauss_sigma=5):
     if not standard:
         return img_raw, img, Aseg1, Aseg2
 
+
 if __name__ == '__main__':
     # Broke: Run the code with all the bugs (as provided)
 
@@ -319,9 +332,26 @@ if __name__ == '__main__':
     # Bespoke: Run the code in a modular way on all images and make a useful multiplot
 
     images = ['Kobi', 'Polar', 'Robin-1', 'Robin-2', 'Cows', 'SciencePark']
+
+    lambdas = None
+    # thetas = np.linspace(-pi, pi, 8)
+    thetas = None
+    gabor_sigmas = None
+
+    gauss_sigma = 1
+
     fig, ax = plt.subplots(len(images), 2)
     for i, img in enumerate(images):
-        img_raw, img, Aseg1, Aseg2 = main(k=2, smoothing_flag=True, standard=False, image=img, gauss_sigma=10.0)
+        img_raw, img, Aseg1, Aseg2 = main(
+            k=2,
+            smoothing_flag=True,
+            standard=False,
+            image=img,
+            gauss_sigma=gauss_sigma,
+            lambdas=lambdas,
+            gabor_sigmas=gabor_sigmas,
+            thetas=thetas,
+        )
         ax[i][0].imshow(img_raw)
         ax[i][0].axis("off")
         ax[i][1].imshow(Aseg1, 'gray', interpolation='none')
