@@ -10,7 +10,7 @@ from createGabor import createGabor, createGauss
 # Hyperparameters
 k = 2      # number of clusters in k-means algorithm. By default,
 # we consider k to be 2 in foreground-background segmentation task.
-image_id = 'Polar'  # Identifier to switch between input images.
+image_id = 'Robin-1'  # Identifier to switch between input images.
 # Possible ids: 'Kobi',    'Polar', 'Robin-1'
 #               'Robin-2', 'Cows', 'SciencePark'
 
@@ -50,13 +50,13 @@ else:
   raise ValueError(err_msg)
 
 # Image adjustments
-img = cv2.resize(img, (0, 0), fx=resize_factor, fy=resize_factor)
-img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+img_raw = cv2.resize(img, (0, 0), fx=resize_factor, fy=resize_factor)
+img = cv2.cvtColor(img_raw, cv2.COLOR_RGB2GRAY)
 
 # Display image
 plt.figure()
 plt.title(f'Input image: {image_id}')
-plt.imshow(img, cmap='gray')
+plt.imshow(img_raw, cmap='gray')
 plt.axis("off")
 plt.show()
 
@@ -211,7 +211,8 @@ if smoothingFlag:
 
     for i, fmag in enumerate(featureMags):
         # i)  filter the magnitude response with appropriate Gaussian kernels
-        gauss_kernel = cv2.getGaussianKernel(int(2*np.ceil(2*5)+1), 5)
+        gauss_vec = cv2.getGaussianKernel(int(2*np.ceil(2*5)+1), 5)
+        gauss_kernel = gauss_vec * gauss_vec.T
         # ii) insert the smoothed image into features[:,:,jj]
         features[:, :, i] = cv2.filter2D(
             featureMags[i].astype('float64'), -1, gauss_kernel)
@@ -278,19 +279,18 @@ plt.imshow(pixLabels)
 plt.axis("off")
 plt.show()
 
-import ipdb; ipdb.set_trace()
-
 # Use the pixLabels to visualize segmentation.
-Aseg1 = np.zeros_like(img)
-Aseg2 = np.zeros_like(img)
-BW = pixLabels == 1
-# BW = np.repeat(BW[:, :, np.newaxis], 3, axis=2)
-Aseg1[BW] = img[BW]
-Aseg2[~BW] = img[~BW]
+Aseg1 = np.zeros_like(img_raw)
+Aseg2 = np.zeros_like(img_raw)
+BW = pixLabels == 0
+BW = np.repeat(BW[:, :, np.newaxis], 3, axis=2)
+Aseg1[BW] = img_raw[BW]
+Aseg2[~BW] = img_raw[~BW]
 
 plt.figure()
 plt.title(f'montage')
 plt.imshow(Aseg1, 'gray', interpolation='none')
+# plt.show()
 plt.imshow(Aseg2, 'jet',  interpolation='none', alpha=0.7)
 plt.axis("off")
 plt.show()
