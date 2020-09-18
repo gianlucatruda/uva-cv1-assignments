@@ -344,7 +344,7 @@ if __name__ == '__main__':
             'lambdas': [5.65685425], 'thetas': None, 'gabor_sigmas': [0.5, 0.75, 1.0, 2.0, 3.0], 'gauss_sigma': 25,
         },
         'Polar': {
-            'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
+            'lambdas': [2.82842712, 11.3137085, 22.627417], 'thetas': None, 'gabor_sigmas': [0.75, 1.0], 'gauss_sigma': 25,
         },
         'Robin-1': {
             'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
