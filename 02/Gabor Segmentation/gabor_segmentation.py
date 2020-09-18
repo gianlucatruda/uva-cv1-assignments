@@ -10,10 +10,11 @@ from createGabor import createGabor, createGauss
 
 
 def main(k=2, smoothing_flag=True, standard=True, image='Kobi',
-         gauss_sigma=5,
+         gauss_sigma=None,
          lambdas=None,
          gabor_sigmas=None,
-         thetas=None,):
+         thetas=None,
+         vis_mode=False):
 
     # Hyperparameters
     # k = 2      # number of clusters in k-means algorithm. By default,
@@ -27,7 +28,7 @@ def main(k=2, smoothing_flag=True, standard=True, image='Kobi',
     err_msg = 'Image not available.'
 
     # Control settings
-    visFlag = False  # Set to true to visualize filter responses.
+    visFlag = vis_mode  # Set to true to visualize filter responses.
     # Set to true to postprocess filter outputs.
     smoothingFlag = smoothing_flag
 
@@ -107,6 +108,9 @@ def main(k=2, smoothing_flag=True, standard=True, image='Kobi',
         sigmas = np.array([1, 2])
     else:
         sigmas = np.array(gabor_sigmas)
+
+    if gauss_sigma is None:
+        gauss_sigma = 5
 
     # Notify user what the configurations are
     print(f"Lambdas: {lambdas}")
@@ -335,9 +339,26 @@ if __name__ == '__main__':
 
     images = ['Kobi', 'Polar', 'Robin-1', 'Robin-2', 'Cows', 'SciencePark']
 
-    lambdas = None
-    thetas = None
-    gabor_sigmas = None
+    hyperparams = {
+        'Kobi': {
+            'lambdas': [5.65685425], 'thetas': None, 'gabor_sigmas': [0.5, 0.75, 1.0, 2.0, 3.0], 'gauss_sigma': 25,
+        },
+        'Polar': {
+            'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
+        },
+        'Robin-1': {
+            'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
+        },
+        'Robin-2': {
+            'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
+        },
+        'Cows': {
+            'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
+        },
+        'SciencePark': {
+            'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
+        }
+    }
 
     gauss_sigma = 1
 
@@ -348,10 +369,10 @@ if __name__ == '__main__':
             smoothing_flag=True,
             standard=False,
             image=img,
-            gauss_sigma=gauss_sigma,
-            lambdas=lambdas,
-            gabor_sigmas=gabor_sigmas,
-            thetas=thetas,
+            gauss_sigma=None,
+            lambdas=None,
+            gabor_sigmas=None,
+            thetas=None,
         )
         ax[i][0].imshow(img_raw)
         ax[i][0].axis("off")
