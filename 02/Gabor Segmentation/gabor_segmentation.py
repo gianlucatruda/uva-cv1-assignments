@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 import time
+import sklearn
 
 from createGabor import createGabor, createGauss
 
@@ -22,7 +23,7 @@ smoothingFlag = True  # Set to true to postprocess filter outputs.
 
 # Read image
 if image_id == 'Kobi':
-  img = cv2.imread('kobi.png')
+  img = cv2.imread('./data/kobi.png')
   img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
   resize_factor = 0.25
 elif image_id == 'Polar':
@@ -44,20 +45,20 @@ elif image_id == 'Cows':
 elif image_id == 'SciencePark':
   img = cv2.imread('./data/sciencepark.jpg')
   img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-  img = permute(img, [2, 1, 3])
   resize_factor = 0.2
 else:
   raise ValueError(err_msg)
 
 # Image adjustments
 img = cv2.resize(img, (0, 0), fx=resize_factor, fy=resize_factor)
-img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
 # Display image
 plt.figure()
 plt.title(f'Input image: {image_id}')
-plt.imshow(img)
+plt.imshow(img, cmap='gray')
 plt.axis("off")
+plt.show()
 
 # Design array of Gabor Filters
 # In this code section, you will create a Gabor Filterbank. A filterbank is
@@ -66,7 +67,7 @@ plt.axis("off")
 # and scales. We will use this bank to extract texture information from the
 # input image.
 
-numRows, numCols, _ = img.shape
+numRows, numCols = img.shape
 
 # Estimate the minimum and maximum of the wavelengths for the sinusoidal
 # carriers.
@@ -146,9 +147,9 @@ for gaborFilter in gaborFilterBank:
     # of the Gabor Filter and the other one is the imagineray part.
 
     # filter the grayscale input with real part of the Gabor
-    real_out = cv2.filter2D(img_gray, -1, gaborFilter['filterPairs'][:, :, 0])
+    real_out = cv2.filter2D(img, -1, gaborFilter['filterPairs'][:, :, 0])
     # filter the grayscale input with imaginary part of the Gabor
-    imag_out = cv2.filter2D(img_gray, -1, gaborFilter['filterPairs'][:, :, 1])
+    imag_out = cv2.filter2D(img, -1, gaborFilter['filterPairs'][:, :, 1])
 
     featureMaps.append(np.stack((real_out, imag_out), 2))
 
@@ -170,7 +171,6 @@ for gaborFilter in gaborFilterBank:
         ax.set_title(title)
         ax.axis("off")
         plt.show()
-
 
 # Compute the magnitude
 # Now, you will compute the magnitude of the output responses.
@@ -250,7 +250,7 @@ plt.figure()
 plt.title(f'Pixel representation projected onto first PC')
 plt.imshow(feature2DImage, cmap='gray')
 plt.axis("off")
-
+plt.show()
 
 # Apply k-means algorithm to cluster pixels using the data matrix,
 # features.
@@ -276,13 +276,15 @@ plt.figure()
 plt.title(f'Pixel clusters')
 plt.imshow(pixLabels)
 plt.axis("off")
+plt.show()
 
+import ipdb; ipdb.set_trace()
 
 # Use the pixLabels to visualize segmentation.
 Aseg1 = np.zeros_like(img)
 Aseg2 = np.zeros_like(img)
-BW = pixLabels == 2
-BW = np.repeat(BW[:, :, np.newaxis], 3, axis=2)
+BW = pixLabels == 1
+# BW = np.repeat(BW[:, :, np.newaxis], 3, axis=2)
 Aseg1[BW] = img[BW]
 Aseg2[~BW] = img[~BW]
 
