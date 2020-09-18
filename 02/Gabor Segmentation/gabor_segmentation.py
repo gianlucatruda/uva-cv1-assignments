@@ -356,7 +356,7 @@ if __name__ == '__main__':
             'lambdas': [2.82842712, 5.65685425], 'thetas': None, 'gabor_sigmas': [0.25, 0.5, 0.75, 1.5, 2.0, ], 'gauss_sigma': 6,
         },
         'SciencePark': {
-            'lambdas': None, 'thetas': None, 'gabor_sigmas': None, 'gauss_sigma': None,
+            'lambdas': None, 'thetas': [0.78539816, 1.57079633, 2.35619449], 'gabor_sigmas': [2.0], 'gauss_sigma': 15,
         }
     }
 
