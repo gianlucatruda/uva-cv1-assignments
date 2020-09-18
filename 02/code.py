@@ -39,8 +39,7 @@ def createGabor(lamb, theta, psi, sigma, gamma):
     for x in range(-width // 2, width // 2):
         for y in range(-height // 2, height // 2):
             xoff, yoff = width // 2, height // 2
-            real[x+xoff, y+yoff], im[x+xoff, y +
-                                     yoff] = gabor(x, y, lamb, theta, psi, sigma, gamma)
+            real[x+xoff, y+yoff], im[x+xoff, y+yoff] = gabor(x, y, lamb, theta, psi, sigma, gamma)
 
     return real, im
 
