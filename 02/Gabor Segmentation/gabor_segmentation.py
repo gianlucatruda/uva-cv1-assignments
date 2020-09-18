@@ -183,23 +183,23 @@ def main(k=2, smoothing_flag=True, standard=True, image='Kobi',
         featureMaps.append(np.stack((real_out, imag_out), 2))
 
         # Visualize the filter responses if you wish.
-        if visFlag:
-            fig = plt.figure()
+        # if visFlag:
+        #     fig = plt.figure()
 
-            ax = fig.add_subplot(1, 2, 1)
-            ax.imshow(real_out)    # Real
-            title = "Re[h(x,y)], \n lambda = {0:.4f}, \n theta = {1:.4f}, \n sigma = {2:.4f}".format(
-                gaborFilter["lmbda"], gaborFilter["theta"], gaborFilter["sigma"])
-            ax.set_title(title)
-            ax.axis("off")
+        #     ax = fig.add_subplot(1, 2, 1)
+        #     ax.imshow(real_out)    # Real
+        #     title = "Re[h(x,y)], \n lambda = {0:.4f}, \n theta = {1:.4f}, \n sigma = {2:.4f}".format(
+        #         gaborFilter["lmbda"], gaborFilter["theta"], gaborFilter["sigma"])
+        #     ax.set_title(title)
+        #     ax.axis("off")
 
-            ax = fig.add_subplot(1, 2, 2)
-            ax.imshow(imag_out)    # Real
-            title = "Im[h(x,y)], \n lambda = {0:.4f}, \n theta = {1:.4f}, \n sigma = {2:.4f}".format(
-                gaborFilter["lmbda"], gaborFilter["theta"], gaborFilter["sigma"])
-            ax.set_title(title)
-            ax.axis("off")
-            plt.show()
+        #     ax = fig.add_subplot(1, 2, 2)
+        #     ax.imshow(imag_out)    # Real
+        #     title = "Im[h(x,y)], \n lambda = {0:.4f}, \n theta = {1:.4f}, \n sigma = {2:.4f}".format(
+        #         gaborFilter["lmbda"], gaborFilter["theta"], gaborFilter["sigma"])
+        #     ax.set_title(title)
+        #     ax.axis("off")
+        #     plt.show()
 
     # Compute the magnitude
     # Now, you will compute the magnitude of the output responses.
@@ -360,8 +360,6 @@ if __name__ == '__main__':
         }
     }
 
-    gauss_sigma = 1
-
     fig, ax = plt.subplots(len(images), 3, figsize=(5, 7))
     for i, img in enumerate(images):
         img_raw, img, Aseg1, Aseg2 = main(
@@ -369,10 +367,7 @@ if __name__ == '__main__':
             smoothing_flag=True,
             standard=False,
             image=img,
-            gauss_sigma=None,
-            lambdas=None,
-            gabor_sigmas=None,
-            thetas=None,
+            **hyperparams[img],
         )
         ax[i][0].imshow(img_raw)
         ax[i][0].axis("off")
