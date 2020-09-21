@@ -21,6 +21,14 @@ Pipfile
 02/Gabor Segmentation/data/
 02/Image_enhancement/images/
 02/figs/
+02/Image_enhancement/**.jpeg
+02/Image_enhancement/**.png
+
+# No images for lab3
+03/person_toy/
+03/pingpong/
+03/*.ppm
+03/*.pgm
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
