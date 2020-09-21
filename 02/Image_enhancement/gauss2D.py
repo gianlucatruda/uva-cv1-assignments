@@ -18,9 +18,16 @@ if __name__ == '__main__':
     img = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
 
     gaussed = convolve2d(img, gauss2D(5, 11))
-    print(img.shape)
-    plt.subplot(1,2,1)
-    plt.imshow(img)
-    plt.subplot(1,2,2)
-    plt.imshow(gaussed)
+
+    gaussed1d = convolve2d(img, gauss1D(5, 11).reshape(1,-1))
+    gaussed1d2 = convolve2d(gaussed1d.T, gauss1D(5, 11).reshape(1, -1)).T
+
+    plt.subplot(2,2,1)
+    plt.imshow(img, cmap='gray')
+    plt.subplot(2,2,2)
+    plt.imshow(gaussed, cmap='gray')
+    plt.subplot(2,2,3)
+    plt.imshow(gaussed1d, cmap='gray')
+    plt.subplot(2, 2, 4)
+    plt.imshow(gaussed1d2, cmap='gray')
     plt.show()

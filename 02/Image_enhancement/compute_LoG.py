@@ -37,13 +37,13 @@ def compute_LoG(image, LOG_type, show_intermediate=False):
     elif LOG_type == 3:
         # Difference of Gaussians
         gauss_narrow = gauss2D(sigma, kernel_size)
-        gauss_wide = gauss2D(10*sigma, kernel_size)
+        gauss_wide = gauss2D(1.6*sigma, kernel_size)
         res = convolve2d(image, gauss_narrow - gauss_wide)
     return res
 
 
 if __name__=='__main__':
     image = plt.imread('images/image2.jpg')
-    res = compute_LoG(image, 1)
+    res = compute_LoG(image, 3)
     plt.imshow(res, cmap='gray')
     plt.show()

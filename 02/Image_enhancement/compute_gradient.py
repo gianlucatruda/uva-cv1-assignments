@@ -13,11 +13,11 @@ def compute_gradient(image):
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     Gx, Gy, magn, dir = compute_gradient(plt.imread('images/image1.jpg'))
-    plt.imshow(Gx)
+    plt.imshow(Gx, cmap='gray')
     plt.show()
-    plt.imshow(Gy)
+    plt.imshow(Gy, cmap='gray')
     plt.show()
-    plt.imshow(magn)
+    plt.imshow(magn, cmap='gray')
     plt.show()
-    plt.imshow(dir)
+    plt.imshow(dir, cmap='gray')
     plt.show()
