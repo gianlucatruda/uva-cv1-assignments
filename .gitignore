@@ -20,6 +20,7 @@ Pipfile
 # No images for lab2
 02/Gabor Segmentation/data/
 02/Image_enhancement/images/
+02/figs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
