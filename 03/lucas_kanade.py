@@ -27,9 +27,7 @@ def get_nonoverlapping_regions(image_1, image_2):
     print(blocks_1.shape)
     wind = (int(image_1.shape[0]/block_shape[0]), int(image_1.shape[1]/block_shape[1]), 1)
 
-
-    # Loop over regions
-
+    # Loop over regions and get A A^t and b for every region.
     for first in range(wind[0]):
         for second in range(wind[1]):
             for third in range(wind[2]):
@@ -43,11 +41,10 @@ def get_block_A_and_b(img1, img2):
     kernel_y = np.array([[-1., -1.], [1., 1.]])
     kernel_t = np.array([[1., 1.], [1., 1.]])
 
-    mode = 'same'
-    fx = signal.convolve2d(img1, kernel_x, boundary='symm', mode=mode)
-    fy = signal.convolve2d(img1, kernel_y, boundary='symm', mode=mode)
-    ft = signal.convolve2d(img2, kernel_t, boundary='symm', mode=mode) + \
-         signal.convolve2d(img1, -kernel_t, boundary='symm', mode=mode)
+    fx = signal.convolve2d(img1, kernel_x, boundary='symm', mode='same')
+    fy = signal.convolve2d(img1, kernel_y, boundary='symm', mode='same')
+    ft = signal.convolve2d(img2, kernel_t, boundary='symm', mode='same') + \
+         signal.convolve2d(img1, -kernel_t, boundary='symm', mode='same')
 
     # A =
     u = np.zeros(img1.shape)
@@ -55,23 +52,28 @@ def get_block_A_and_b(img1, img2):
 
     # Get values within window size distance
     w = block_shape[0]
-    for i in range(w, img1.shape[0]-w):
-        for j in range(w, img1.shape[1]-w):
+    for i in range(w):
+        for j in range(w):
+
+            # Get derivatives of the current region
             Ix = fx[i-w:i+w+1, j-w:j+w+1].flatten()
             Iy = fy[i-w:i+w+1, j-w:j+w+1].flatten()
             It = ft[i-w:i+w+1, j-w:j+w+1].flatten()
+
+            # Get A and b
             A = [Ix, Iy]
             Atrans = np.transpose(A)
-            print(A)
             b = -It
-            # v = (A^TA)^−1 A^Tb
-            v = np.dot(np.linalg.inv(np.dot(Atrans, A)), np.dot(Atrans, b))
+
+            # Get optical flow by: v = (A^TA)^−1 A^Tb
+            AtA = np.dot(Atrans, A)
+            print(AtA)
+            inverse = np.linalg.inv(AtA)
+            Atb = np.dot(Atrans, b)
+            v = np.dot(inverse, Atb)
             print(v)
 
-
     return v
-
-
 
 
 if __name__ == "__main__":
@@ -85,4 +87,4 @@ if __name__ == "__main__":
     synth_2 = plt.imread('synth2.pgm')
     print(synth_2.shape)
 
-    regions = get_nonoverlapping_regions(sphere_1, sphere_2)
+    get_nonoverlapping_regions(sphere_1, sphere_2)
