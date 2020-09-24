@@ -17,22 +17,24 @@ from scipy import signal
 from skimage.util.shape import view_as_windows
 from matplotlib import pyplot as plt
 
-block_shape = (15, 15, 3)
+block_shape = (15, 15)
 
 
 def get_nonoverlapping_regions(image_1, image_2):
 
-    blocks_1 = view_as_windows(image_1.astype(np.uint8), block_shape, step=(15, 15, 1))
-    blocks_2 = view_as_windows(image_2.astype(np.uint8), block_shape, step=(15, 15, 1))
+    image_1 = np.mean(image_1, axis=2)
+    image_2 = np.mean(image_2, axis=2)
+
+    blocks_1 = view_as_windows(image_1.astype(np.uint8), block_shape, step=(15, 15))
+    blocks_2 = view_as_windows(image_2.astype(np.uint8), block_shape, step=(15, 15))
     print(blocks_1.shape)
-    wind = (int(image_1.shape[0]/block_shape[0]), int(image_1.shape[1]/block_shape[1]), 1)
+    wind = (int(image_1.shape[0]/block_shape[0]), int(image_1.shape[1]/block_shape[1]))
 
     # Loop over regions and get A A^t and b for every region.
     for first in range(wind[0]):
         for second in range(wind[1]):
-            for third in range(wind[2]):
-                plt.imshow(blocks_1[first][second][third])
-                get_block_A_and_b(blocks_1[first][second][third], blocks_2[first][second][third])
+            plt.imshow(blocks_1[first][second])
+            get_block_A_and_b(blocks_1[first][second], blocks_2[first][second])
 
 
 def get_block_A_and_b(img1, img2):
