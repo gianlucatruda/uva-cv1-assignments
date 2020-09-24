@@ -33,10 +33,12 @@ def get_nonoverlapping_regions(image_1, image_2):
     # Loop over regions and get A A^t and b for every region.
     for first in range(wind[0]):
         for second in range(wind[1]):
-            plt.imshow(blocks_1[first][second])
+            # plt.imshow(blocks_1[first][second])
+            # plt.show()
             get_block_A_and_b(blocks_1[first][second], blocks_2[first][second])
 
 
+# TODO: very long function, maybe split up
 def get_block_A_and_b(img1, img2):
 
     kernel_x = np.array([[-1., 1.], [-1., 1.]])
@@ -45,15 +47,23 @@ def get_block_A_and_b(img1, img2):
 
     fx = signal.convolve2d(img1, kernel_x, boundary='symm', mode='same')
     fy = signal.convolve2d(img1, kernel_y, boundary='symm', mode='same')
+
+    # TODO: fix ft, it now gives only zeros
+
     ft = signal.convolve2d(img2, kernel_t, boundary='symm', mode='same') + \
          signal.convolve2d(img1, -kernel_t, boundary='symm', mode='same')
 
-    # A =
-    u = np.zeros(img1.shape)
-    v = np.zeros(img1.shape)
-
     # Get values within window size distance
     w = block_shape[0]
+
+    # Initialize starting positions.
+    X = np.zeros(img1.shape)
+    Y = np.zeros(img1.shape)
+
+    v = np.zeros(img1.shape)
+    print(v)
+    u = np.zeros(img1.shape)
+
     for i in range(w):
         for j in range(w):
 
@@ -63,19 +73,45 @@ def get_block_A_and_b(img1, img2):
             It = ft[i-w:i+w+1, j-w:j+w+1].flatten()
 
             # Get A and b
-            A = [Ix, Iy]
+            A = np.column_stack((Ix, Iy))
+            # print(A)
             Atrans = np.transpose(A)
             b = -It
 
             # Get optical flow by: v = (A^TA)^−1 A^Tb
             AtA = np.dot(Atrans, A)
-            print(AtA)
-            inverse = np.linalg.inv(AtA)
-            Atb = np.dot(Atrans, b)
-            v = np.dot(inverse, Atb)
-            print(v)
+            # print(AtA)
 
-    return v
+            X[i, j] = i
+            Y[i, j] = j
+
+            if np.linalg.det(AtA) != 0:
+                np.linalg.inv(AtA)
+                inverse = np.linalg.inv(AtA)
+                Atb = np.dot(Atrans, b)
+                equation_solution = np.dot(inverse, Atb)
+                # print(equation_solution)
+                v[i, j] = equation_solution[1]
+                u[i, j] = equation_solution[0]
+                # print(v)
+            else:
+                u[i, j] = 0
+                v[i, j] = 0
+
+    plot_quiver(X, Y, u, v)
+
+
+def plot_quiver(X, Y, u, v):
+    # TODO: figure out right input for quiver
+    fig, ax = plt.subplots(figsize=(13, 13))
+    ax.quiver(X, Y, u, v)
+
+    ax.xaxis.set_ticks([])
+    ax.yaxis.set_ticks([])
+    # ax.axis([-0.2, 2.3, -0.2, 2.3])
+    ax.set_aspect('equal')
+
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -84,9 +120,9 @@ if __name__ == "__main__":
     sphere_2 = plt.imread('sphere1.ppm')
     print(sphere_2.shape)
 
-    synth_1 = plt.imread('synth1.pgm')
-    print(synth_1.shape)
-    synth_2 = plt.imread('synth2.pgm')
-    print(synth_2.shape)
+    # synth_1 = plt.imread('synth1.pgm')
+    # print(synth_1.shape)
+    # synth_2 = plt.imread('synth2.pgm')
+    # print(synth_2.shape)
 
     get_nonoverlapping_regions(sphere_1, sphere_2)
