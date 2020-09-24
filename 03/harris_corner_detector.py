@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 
-def calculate_harris(img, sigma=3, max_window=3, thr=0):
+def calculate_harris(img, sigma=3, max_window=3, thr=0.1):
     img2d = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     Ix = convolve2d(img2d, np.array([[-1, 0, 1]]), 'same')  # gradient by x-axis
     Iy = convolve2d(img2d.T, np.array([[-1, 0, 1]]), 'same').T  # gradient by y-axis
@@ -15,13 +15,16 @@ def calculate_harris(img, sigma=3, max_window=3, thr=0):
     H = (A * C - B**2) - 0.04*(A + C)**2  # cornerness matrix
 
     # searching for local maxima in H to detect corners
-    r, c = np.where((maximum_filter(H, max_window) == H) & (maximum_filter(H, max_window) >= thr))
+    r, c = np.where((maximum_filter(H, max_window) == H) & (maximum_filter(H, max_window) >= thr*np.max(H)))
     return H, r, c
 
 
 if __name__=='__main__':
-    img = plt.imread('person_toy/00000001.jpg')
-    H,r,c = calculate_harris(img, sigma=1, thr=1)
+    img = np.array(plt.imread('person_toy/00000001.jpg'))
+    img.setflags(write=1)
+    H,r,c = calculate_harris(img, sigma=1, thr=0.01)
     print(f'There are {r.shape[0]} corner points')
-    plt.imshow(H, cmap='gray')
+    #print(list(zip(r,c)))
+    img[r,c] = (0,0,255)
+    plt.imshow(img, cmap='gray')
     plt.show()
