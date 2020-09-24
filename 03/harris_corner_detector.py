@@ -19,12 +19,27 @@ def calculate_harris(img, sigma=3, max_window=3, thr=0.1):
     return H, r, c
 
 
-if __name__=='__main__':
-    img = np.array(plt.imread('person_toy/00000001.jpg'))
-    img.setflags(write=1)
-    H,r,c = calculate_harris(img, sigma=1, thr=0.01)
-    print(f'There are {r.shape[0]} corner points')
-    #print(list(zip(r,c)))
-    img[r,c] = (0,0,255)
-    plt.imshow(img, cmap='gray')
+def plot_grad(img, r, c):
+    img2d = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    Ix = convolve2d(img2d, np.array([[-1, 0, 1]]), 'same')  # gradient by x-axis
+    Iy = convolve2d(img2d.T, np.array([[-1, 0, 1]]), 'same').T  # gradient by y-axis
+    plt.subplot(2, 2, 1)
+    plt.imshow(Ix, cmap='gray')
+    plt.subplot(2, 2, 2)
+    plt.imshow(Iy, cmap='gray')
+    plt.subplot2grid((2,2), (1,0), colspan=2)
+    for point in list(zip(c,r)):
+        img = cv2.circle(img, center=point, radius=10, color=(0,0,255), thickness=-1)
+    plt.imshow(img)
     plt.show()
+
+
+if __name__=='__main__':
+    #fname = 'person_toy/00000003.jpg'
+    fname = 'pingpong/0000.jpeg'
+    img = np.array(plt.imread(fname))
+    img.setflags(write=1)
+    H,r,c = calculate_harris(img, max_window=4, sigma=3, thr=0.05)
+    print(f'There are {r.shape[0]} corner points')
+    plot_grad(img, r, c)
+    
