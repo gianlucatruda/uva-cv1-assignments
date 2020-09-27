@@ -1,25 +1,14 @@
-# For this assignment, you will be given two pairs of images:
-# synth1.pgm, synth2.pgm; and sphere1.ppm, sphere2.ppm.
-# You should estimate the optical flow between these two pairs.
-# That is, you will get optical flow for sphere images, and for synth images separately.
-# Implement the Lucas-Kanade algorithm using the following steps.
-# 1. Divide input images on non-overlapping regions, each region being 15 × 15.
-# 2. For each region compute A, AT and b. Then, estimate optical flow as given in Equation 22.
-# 3. When you have estimation for optical flow (Vx, Vy) of each region, you should display the results.
-# There is a matplotlib function quiver which plots a set of two-dimensional vectors as arrows on the screen.
-# Try to figure out how to use this to show your optical flow results.
-# Note: You are allowed to use scipy.signal.convolve2d to perform convolution.
-# Include a demo function to run your code
-
 from cv2 import imread
 import numpy as np
 from scipy import signal
 from matplotlib import pyplot as plt
 
-# WINSIZE = (15, 15)
+# WINSIZE = (15, 15) TODO
 
 
-def lukas_kanade(image_1, image_2):
+def lucas_kanade(image_1, image_2):
+    """ Run Lucas Kanade on a pair of images using 15x15 windows.
+    """
 
     # Convert to grayscale by averaging channels (if necessary)
     if image_1.ndim == 3:
@@ -46,6 +35,8 @@ def lukas_kanade(image_1, image_2):
 
 
 def lk_on_window(img1, img2):
+    """ Run Lucas Kanade on a pair of windows
+    """
 
     # Prewitt filter approach
     kernel_x = np.array([[-1., 1.], [-1., 1.]])
@@ -78,8 +69,8 @@ def lk_on_window(img1, img2):
 
 
 def plot_vector_field(img, V, ax, step=10, scale=None):
-
-    # Plot overlayed vector fields
+    """ Plot overlayed vector fields
+    """
 
     rows = img.shape[0]
     cols = img.shape[1]
@@ -100,12 +91,12 @@ if __name__ == "__main__":
 
     sphere_1 = plt.imread('sphere1.ppm')
     sphere_2 = plt.imread('sphere2.ppm')
-    V1 = lukas_kanade(sphere_1, sphere_2)
+    V1 = lucas_kanade(sphere_1, sphere_2)
     plot_vector_field(sphere_1, V1, ax[0], scale=1)
 
     synth_1 = plt.imread('synth1.pgm')
     synth_2 = plt.imread('synth2.pgm')
-    V2 = lukas_kanade(synth_1, synth_2)
+    V2 = lucas_kanade(synth_1, synth_2)
     plot_vector_field(synth_1, V2, ax[1])
     plt.tight_layout()
     plt.show()
