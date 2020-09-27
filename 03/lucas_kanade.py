@@ -19,7 +19,10 @@ from matplotlib import pyplot as plt
 # WINSIZE = (15, 15)
 
 
-def lukas_kanade(image_1, image_2, show_mode=False):
+def lukas_kanade(image_1, image_2, show_mode=False, true_scale=True):
+
+    # Save copy of image 1
+    raw1 = image_1
 
     # Convert to grayscale by averaging channels (if necessary)
     if image_1.ndim == 3:
@@ -27,22 +30,32 @@ def lukas_kanade(image_1, image_2, show_mode=False):
     if image_2.ndim == 3:
         image_2 = np.mean(image_2, axis=2)
 
+    # Motion array initialised
     V_img = np.zeros((image_1.shape[0], image_1.shape[1], 2))
 
     rows = image_1.shape[0]
     cols = image_1.shape[1]
     windows = rows // 15  # TODO remove hardcoding
 
-    # Loop over regions and get A A^t and b for every region.
+    # Loop over windows
     for i in range(0, 15*windows, 15):
         for j in range(0, 15*windows, 15):
             block_1 = image_1[i:i+15, j:j+15]
             block_2 = image_2[i:i+15, j:j+15]
+
+            # Apply lucas kanade on that window
             V = lk_on_window(block_1, block_2)
             V_img[i:i+15, j:j+15] = V
 
+    # Optionally display overlayed vector field
     if show_mode:
-        q = plt.quiver(V_img[:, :, 0], V_img[:, :, 1], angles='xy')
+        scale = 1 if true_scale else None
+        step = 10
+        Vx = V_img[::step, ::step, 0]
+        Vy = V_img[::step, ::step, 1]
+        X, Y = np.arange(0, rows, step), np.arange(0, cols, step)
+        plt.imshow(raw1, cmap='gray', alpha=0.5)
+        plt.quiver(X, Y, Vx, Vy, angles='xy', color='red', scale_units='x', scale=scale, headwidth=3, width=0.005)
         plt.show()
 
     return V_img
@@ -57,8 +70,8 @@ def lk_on_window(img1, img2):
 
     fx = signal.convolve2d(img1, kernel_x, boundary='symm', mode='same')
     fy = signal.convolve2d(img1, kernel_y, boundary='symm', mode='same')
-    ft = signal.convolve2d(img2, kernel_t, boundary='symm', mode='same') + \
-        signal.convolve2d(img1, -1 * kernel_t, boundary='symm', mode='same')
+    ft = signal.convolve2d(img1, kernel_t, boundary='symm', mode='same') + \
+        signal.convolve2d(img2, -1 * kernel_t, boundary='symm', mode='same')
 
     # Get values within window
     w = img1.shape[0]
