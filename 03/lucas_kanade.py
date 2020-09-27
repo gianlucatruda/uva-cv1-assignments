@@ -19,10 +19,7 @@ from matplotlib import pyplot as plt
 # WINSIZE = (15, 15)
 
 
-def lukas_kanade(image_1, image_2, show_mode=False, true_scale=True):
-
-    # Save copy of image 1
-    raw1 = image_1
+def lukas_kanade(image_1, image_2):
 
     # Convert to grayscale by averaging channels (if necessary)
     if image_1.ndim == 3:
@@ -32,9 +29,7 @@ def lukas_kanade(image_1, image_2, show_mode=False, true_scale=True):
 
     # Motion array initialised
     V_img = np.zeros((image_1.shape[0], image_1.shape[1], 2))
-
     rows = image_1.shape[0]
-    cols = image_1.shape[1]
     windows = rows // 15  # TODO remove hardcoding
 
     # Loop over windows
@@ -46,17 +41,6 @@ def lukas_kanade(image_1, image_2, show_mode=False, true_scale=True):
             # Apply lucas kanade on that window
             V = lk_on_window(block_1, block_2)
             V_img[i:i+15, j:j+15] = V
-
-    # Optionally display overlayed vector field
-    if show_mode:
-        scale = 1 if true_scale else None
-        step = 10
-        Vx = V_img[::step, ::step, 0]
-        Vy = V_img[::step, ::step, 1]
-        X, Y = np.arange(0, rows, step), np.arange(0, cols, step)
-        plt.imshow(raw1, cmap='gray', alpha=0.5)
-        plt.quiver(X, Y, Vx, Vy, angles='xy', color='red', scale_units='x', scale=scale, headwidth=3, width=0.005)
-        plt.show()
 
     return V_img
 
@@ -93,12 +77,35 @@ def lk_on_window(img1, img2):
     return V
 
 
+def plot_vector_field(img, V, ax, step=10, scale=None):
+
+    # Plot overlayed vector fields
+
+    rows = img.shape[0]
+    cols = img.shape[1]
+
+    Vx = V[::step, ::step, 0]
+    Vy = V[::step, ::step, 1]
+    X, Y = np.arange(0, rows, step), np.arange(0, cols, step)
+    ax.imshow(img, cmap='gray', alpha=0.5)
+    ax.quiver(X, Y, Vx, Vy, angles='xy', color='red',
+              scale_units='x', scale=scale, headwidth=3, width=0.005)
+
+    return ax
+
+
 if __name__ == "__main__":
+
+    fig, ax = plt.subplots(1, 2, dpi=200)
+
     sphere_1 = plt.imread('sphere1.ppm')
     sphere_2 = plt.imread('sphere2.ppm')
-    lukas_kanade(sphere_1, sphere_2, show_mode=True)
+    V1 = lukas_kanade(sphere_1, sphere_2)
+    plot_vector_field(sphere_1, V1, ax[0], scale=1)
 
     synth_1 = plt.imread('synth1.pgm')
     synth_2 = plt.imread('synth2.pgm')
-
-    lukas_kanade(synth_1, synth_2, show_mode=True)
+    V2 = lukas_kanade(synth_1, synth_2)
+    plot_vector_field(synth_1, V2, ax[1])
+    plt.tight_layout()
+    plt.show()
