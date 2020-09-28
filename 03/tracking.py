@@ -12,7 +12,7 @@ from lucas_kanade import lucas_kanade, lk_on_window, plot_vector_field
 
 if __name__ == '__main__':
     DIR = 'person_toy'
-    DIR = 'pingpong'
+    # DIR = 'pingpong'
     OUTDIR = 'output'
 
     savepath = Path(OUTDIR) / DIR
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         for x, y in zip(c, r):
 
             # Create windows (N x N) around each Harris point
-            N = 20 // 2
+            N = 30 // 2
             winx_1, winx_2 = max(0, x-N), min(cols, x+N)
             winy_1, winy_2 = max(0, y-N), min(rows, y+N)
             block_1 = frame[winx_1:winx_2, winy_1:winy_2]
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
             # Visualise Harris points, LK windows, motion vectors
             img = cv2.rectangle(img, (winx_1, winy_1), (winx_2, winy_2), (255, 0, 0), 1)
-            img = cv2.arrowedLine(img, (x, y), (round(x + 50*Vx), round(y + 50*Vy)),color=(0, 255, 0), thickness=2)
+            img = cv2.arrowedLine(img, (x, y), (round(x + 100*Vx), round(y + 100*Vy)),color=(0, 255, 0), thickness=2)
             img = cv2.circle(img, center=(x, y), radius=1, color=(0, 0, 255), thickness=2)
 
         # Save the updated points
