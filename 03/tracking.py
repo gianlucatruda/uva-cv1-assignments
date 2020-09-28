@@ -10,16 +10,9 @@ from harris_corner_detector import calculate_harris, plot_grad
 from lucas_kanade import lucas_kanade, lk_on_window, plot_vector_field
 
 
-def grayscale(img: np.ndarray):
-    # Convert to grayscale by averaging channels (if necessary)
-    if img.ndim == 3:
-        return np.mean(img, axis=2)
-    return img
-
-
 if __name__ == '__main__':
     DIR = 'person_toy'
-    DIR = 'pingpong'
+    # DIR = 'pingpong'
     OUTDIR = 'output'
 
     savepath = Path(OUTDIR) / DIR
@@ -58,8 +51,8 @@ if __name__ == '__main__':
         print(f"Frame: {i}/{len(frames)}", end='\r')
 
         # Convert to grayscale
-        frame = grayscale(frames[i])
-        next_frame = grayscale(frames[i+1])
+        frame = cv2.cvtColor(frames[i], cv2.COLOR_RGB2GRAY)
+        next_frame = cv2.cvtColor(frames[i+1], cv2.COLOR_RGB2GRAY)
 
         # Run LK on features
         _c, _r = [], []
@@ -68,7 +61,7 @@ if __name__ == '__main__':
         for x, y in zip(c, r):
 
             # Create windows (N x N) around each Harris point
-            N = 30 // 2
+            N = 20 // 2
             winx_1, winx_2 = max(0, x-N), min(cols, x+N)
             winy_1, winy_2 = max(0, y-N), min(rows, y+N)
             block_1 = frame[winx_1:winx_2, winy_1:winy_2]
@@ -79,14 +72,14 @@ if __name__ == '__main__':
             Vx, Vy = V[..., 0], V[..., 1]
 
             # Update features
-            _x = x + N*Vx
-            _y = y + N*Vy
+            _x = x + 10*Vx
+            _y = y + 10*Vy
             _c.append(round(_x))
             _r.append(round(_y))
 
             # Visualise Harris points, LK windows, motion vectors
-            # img = cv2.rectangle(img, (winx_1, winy_1), (winx_2, winy_2), (255, 0, 0), 1)
-            img = cv2.arrowedLine(img, (x, y), (round(x + 5*N*Vx), round(y + 5*N*Vy)),color=(0, 255, 0), thickness=2)
+            img = cv2.rectangle(img, (winx_1, winy_1), (winx_2, winy_2), (255, 0, 0), 1)
+            img = cv2.arrowedLine(img, (x, y), (round(x + 50*Vx), round(y + 50*Vy)),color=(0, 255, 0), thickness=2)
             img = cv2.circle(img, center=(x, y), radius=1, color=(0, 0, 255), thickness=2)
 
         # Save the updated points
