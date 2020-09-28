@@ -29,6 +29,7 @@ Pipfile
 03/pingpong/
 03/*.ppm
 03/*.pgm
+03/figs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
