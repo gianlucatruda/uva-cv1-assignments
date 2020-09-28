@@ -35,11 +35,11 @@ def get_nonoverlapping_regions(image_1, image_2):
         for second in range(wind[1]):
             # plt.imshow(blocks_1[first][second])
             # plt.show()
-            get_block_A_and_b(blocks_1[first][second], blocks_2[first][second])
+            get_block_A_and_b(blocks_1[first][second], blocks_2[first][second], wind)
 
 
 # TODO: very long function, maybe split up
-def get_block_A_and_b(img1, img2):
+def get_block_A_and_b(img1, img2, wind):
 
     kernel_x = np.array([[-1., 1.], [-1., 1.]])
     kernel_y = np.array([[-1., -1.], [1., 1.]])
@@ -54,7 +54,7 @@ def get_block_A_and_b(img1, img2):
          signal.convolve2d(img1, -kernel_t, boundary='symm', mode='same')
 
     # Get values within window size distance
-    w = block_shape[0]
+    w = wind[0]
 
     # Initialize starting positions.
     X = np.zeros(img1.shape)
