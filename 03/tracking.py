@@ -12,7 +12,7 @@ from lucas_kanade import lucas_kanade, lk_on_window, plot_vector_field
 
 if __name__ == '__main__':
     DIR = 'person_toy'
-    # DIR = 'pingpong'
+    DIR = 'pingpong'
     OUTDIR = 'output'
 
     savepath = Path(OUTDIR) / DIR
@@ -45,6 +45,8 @@ if __name__ == '__main__':
     # Sanity check about ordering of rows and columns
     # print('R:', r)
     # print('C:', c)
+
+    image_frames = []
 
     # Track Harris corners through subsequent frames
     for i, f in enumerate(frames[:-1]):
@@ -87,3 +89,11 @@ if __name__ == '__main__':
 
         # Save the composite image
         cv2.imwrite(f"{savepath}/{str(i).zfill(5)}.png", img)
+        image_frames.append(img)
+
+
+    # Make video of all images
+    out = cv2.VideoWriter(f"{savepath}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), 15, (cols, rows))
+    for i in range(len(image_frames)):
+        out.write(image_frames[i])
+    out.release()
