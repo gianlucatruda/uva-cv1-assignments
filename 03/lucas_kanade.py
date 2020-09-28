@@ -3,8 +3,6 @@ import numpy as np
 from scipy import signal
 from matplotlib import pyplot as plt
 
-# WINSIZE = (15, 15) TODO
-
 
 def lucas_kanade(image_1, image_2):
     """ Run Lucas Kanade on a pair of images using 15x15 windows.
