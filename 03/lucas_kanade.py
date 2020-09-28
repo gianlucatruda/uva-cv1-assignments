@@ -54,10 +54,6 @@ def lk_on_window(img1, img2):
     # Initialize flow matrix
     V = np.zeros((w, w, 2))
 
-    v = np.zeros(img1.shape)
-    # print(v)
-    u = np.zeros(img1.shape)
-
     # Get A and b
     A = np.column_stack((fx.flatten(), fy.flatten()))
     b = -1 * ft.flatten()

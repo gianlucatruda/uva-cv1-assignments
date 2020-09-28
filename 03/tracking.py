@@ -18,8 +18,9 @@ def grayscale(img: np.ndarray):
 
 
 if __name__ == '__main__':
+    SCALER = 5
     DIR = 'person_toy'
-    # DIR = 'pingpong'
+    DIR = 'pingpong'
     OUTDIR = 'output'
 
     savepath = Path(OUTDIR) / DIR
@@ -29,14 +30,14 @@ if __name__ == '__main__':
     # Read in all images in directory
     frames = []
     frame_path = Path(DIR)
-    for img in frame_path.glob('*.jp*g'):
-        frames.append(plt.imread(img))
+    for img in sorted(list(frame_path.glob('*.jp*g'))):
+        frames.append(cv2.imread(str(img)))
 
     nframes = len(frames)
     rows, cols = frames[0].shape[0], frames[0].shape[1]
 
     # Find Harris corners in first frame
-    H, c, r = calculate_harris(frames[0], sigma=3, window=3, thr=0.003)
+    H, c, r = calculate_harris(frames[0], sigma=0.8, window=10, thr=0.005)
 
     # Ditch any points on edges of image (common)
     _c, _r = [], []
@@ -67,7 +68,7 @@ if __name__ == '__main__':
 
         for x, y in zip(c, r):
 
-            # Create windows around each Harris point
+            # Create windows (20x20) around each Harris point
             winx_1, winx_2 = max(0, x-10), min(cols, x+10)
             winy_1, winy_2 = max(0, y-10), min(rows, y+10)
             block_1 = frame[winx_1:winx_2, winy_1:winy_2]
@@ -78,8 +79,8 @@ if __name__ == '__main__':
             Vx, Vy = V[..., 0], V[..., 1]
 
             # Update features
-            _x = x + Vx
-            _y = y + Vy
+            _x = x + SCALER*Vx
+            _y = y + SCALER*Vy
             _c.append(int(_x))
             _r.append(int(_y))
 
@@ -87,16 +88,15 @@ if __name__ == '__main__':
             img = cv2.rectangle(img, (winx_1, winy_1),
                                 (winx_2, winy_2), (255, 0, 0), 1)
             img = cv2.arrowedLine(
-                img, (x, y), (int(x + 100*Vx), int(y + 100*Vy)),
-                color=(0, 255, 0), thickness=2)
+                img, (x, y), (int(x + 30*Vx), int(y + 30*Vy)),
+                color=(0, 255, 0), thickness=1)
             img = cv2.circle(img, center=(x, y), radius=2,
-                             color=(0, 0, 255), thickness=3)
+                             color=(0, 0, 255), thickness=2)
 
         # Save the updated points
         c, r = _c, _r
 
         # Save the composite image
-        plt.imshow(img)
-        plt.savefig(f"{savepath}/{str(i).zfill(5)}.png")
+        cv2.imwrite(f"{savepath}/{str(i).zfill(5)}.png", img)
 
     # TODO make video
