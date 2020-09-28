@@ -18,7 +18,6 @@ def grayscale(img: np.ndarray):
 
 
 if __name__ == '__main__':
-    SCALER = 5
     DIR = 'person_toy'
     DIR = 'pingpong'
     OUTDIR = 'output'
@@ -37,12 +36,12 @@ if __name__ == '__main__':
     rows, cols = frames[0].shape[0], frames[0].shape[1]
 
     # Find Harris corners in first frame
-    H, c, r = calculate_harris(frames[0], sigma=0.8, window=10, thr=0.005)
+    H, c, r = calculate_harris(frames[0], sigma=3, window=3, thr=0.01)
 
     # Ditch any points on edges of image (common)
     _c, _r = [], []
     for x, y in zip(c, r):
-        if x > 10 and y > 10:
+        if x > 50 and y > 50:
             _c.append(x)
             _r.append(y)
     c, r = _c, _r
@@ -68,9 +67,10 @@ if __name__ == '__main__':
 
         for x, y in zip(c, r):
 
-            # Create windows (20x20) around each Harris point
-            winx_1, winx_2 = max(0, x-10), min(cols, x+10)
-            winy_1, winy_2 = max(0, y-10), min(rows, y+10)
+            # Create windows (N x N) around each Harris point
+            N = 30 // 2
+            winx_1, winx_2 = max(0, x-N), min(cols, x+N)
+            winy_1, winy_2 = max(0, y-N), min(rows, y+N)
             block_1 = frame[winx_1:winx_2, winy_1:winy_2]
             block_2 = next_frame[winx_1:winx_2, winy_1:winy_2]
 
@@ -79,24 +79,18 @@ if __name__ == '__main__':
             Vx, Vy = V[..., 0], V[..., 1]
 
             # Update features
-            _x = x + SCALER*Vx
-            _y = y + SCALER*Vy
-            _c.append(int(_x))
-            _r.append(int(_y))
+            _x = x + N*Vx
+            _y = y + N*Vy
+            _c.append(round(_x))
+            _r.append(round(_y))
 
             # Visualise Harris points, LK windows, motion vectors
-            img = cv2.rectangle(img, (winx_1, winy_1),
-                                (winx_2, winy_2), (255, 0, 0), 1)
-            img = cv2.arrowedLine(
-                img, (x, y), (int(x + 30*Vx), int(y + 30*Vy)),
-                color=(0, 255, 0), thickness=1)
-            img = cv2.circle(img, center=(x, y), radius=2,
-                             color=(0, 0, 255), thickness=2)
+            # img = cv2.rectangle(img, (winx_1, winy_1), (winx_2, winy_2), (255, 0, 0), 1)
+            img = cv2.arrowedLine(img, (x, y), (round(x + 5*N*Vx), round(y + 5*N*Vy)),color=(0, 255, 0), thickness=2)
+            img = cv2.circle(img, center=(x, y), radius=1, color=(0, 0, 255), thickness=2)
 
         # Save the updated points
         c, r = _c, _r
 
         # Save the composite image
         cv2.imwrite(f"{savepath}/{str(i).zfill(5)}.png", img)
-
-    # TODO make video
