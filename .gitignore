@@ -36,6 +36,8 @@ Pipfile
 *.ppm
 *.pgm
 *.png
+*.jpg
+*.jpeg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
