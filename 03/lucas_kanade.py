@@ -88,6 +88,8 @@ def plot_vector_field(img, V, ax, step=10, scale=None):
 if __name__ == "__main__":
 
     fig, ax = plt.subplots(1, 2, dpi=200)
+    ax[0].axis('off')
+    ax[1].axis('off')
 
     sphere_1 = plt.imread('sphere1.ppm')
     sphere_2 = plt.imread('sphere2.ppm')
@@ -98,5 +100,6 @@ if __name__ == "__main__":
     synth_2 = plt.imread('synth2.pgm')
     V2 = lucas_kanade(synth_1, synth_2)
     plot_vector_field(synth_1, V2, ax[1])
+
     plt.tight_layout()
     plt.show()

@@ -121,6 +121,7 @@ def show_results(albedo, normals, height_map, SE):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.plot_surface(X,Y, H.T)
+    print("SE is" + str(SE))
     plt.show()
 
     # plotting model geometry

@@ -20,9 +20,13 @@ def denoise(image, kernel_type, kernel_size):
 
 if __name__ == "__main__":
     # Get all possible combinations to test.
-    img_paths = ['images/image1_saltpepper.jpg', 'images/image1_gaussian.jpg']
-    kernel_types = ['box', 'median']
+    # img_paths = ['images/image1_saltpepper.jpg', 'images/image1_gaussian.jpg']
+    img_paths = ['images/image1_gaussian.jpg']
+
+    # kernel_types = ['box', 'median']
+    kernel_types = ['gaussian']
     kernel_sizes = [3, 5, 7]
+    std_dev = [0, 0.25, 0.5, 1, 5]
 
     fig = plt.figure()
     num = 0
@@ -30,24 +34,26 @@ if __name__ == "__main__":
     for img_path in img_paths:
         image = cv2.imread(img_path)
 
-        for kernel_type in kernel_types:
-            for kernel_size in kernel_sizes:
-                imOut = denoise(image, kernel_type, kernel_size)
+        for dev in std_dev:
+            for kernel_type in kernel_types:
+                for kernel_size in kernel_sizes:
+                    imOut = denoise(image, kernel_type, kernel_size)
 
-                PSNR = myPSNR(image, imOut)
+                    PSNR = myPSNR(image, imOut)
 
-                num += 1
-                ax = fig.add_subplot(4, 3, num)
-                ax.axes.xaxis.set_visible(False)
-                ax.axes.yaxis.set_visible(False)
-                ax.imshow(imOut, interpolation='bilinear', origin='upper', extent=[-3, 3, -3, 3])
-                ax.set_title(str(kernel_type) + " " + str(kernel_size) + " " + str(img_path[14]))
-                print(str(kernel_type) + " " + str(kernel_size) + " " + str(img_path[6:] + " gives value:"))
-                print(PSNR)
+                    num += 1
+                    ax = fig.add_subplot(3, 5, num)
+                    ax.axes.xaxis.set_visible(False)
+                    ax.axes.yaxis.set_visible(False)
+                    ax.imshow(imOut, interpolation='bilinear', origin='upper', extent=[-3, 3, -3, 3])
+                    # ax.set_title(str(kernel_type) + " " + str(kernel_size) + " " + str(img_path[14]))
+                    ax.set_title(str(kernel_size) + " std_" + str(dev))
+                    print(str(kernel_type) + " " + str(kernel_size) + " " + str(img_path[6:] + " gives value:"))
+                    print(PSNR)
 
 
     plt.tight_layout()
-    plt.savefig("denoise.jpeg")
+    plt.savefig("gaussian.jpeg", dpi=300)
     plt.show()
 
 
