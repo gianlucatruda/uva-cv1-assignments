@@ -2,7 +2,8 @@ import cv2
 
 
 def match_keypoints(im1, im2, show_keypoints=False, show_matches=True):
-    sift = cv2.SIFT_create()
+    # New API https://stackoverflow.com/questions/18561910/cant-use-surf-sift-in-opencv#32735795
+    sift = cv2.xfeatures2d.SIFT_create()
     kp1, des1 = sift.detectAndCompute(im1, None)
     kp2, des2 = sift.detectAndCompute(im2, None)
 
@@ -28,6 +29,7 @@ def match_keypoints(im1, im2, show_keypoints=False, show_matches=True):
         cv2.imshow('image2', img2)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
     return matches
 
 
@@ -35,4 +37,5 @@ if __name__=='__main__':
     im1 = cv2.imread('boat1.pgm')
     im2 = cv2.imread('boat2.pgm')
 
-    matches = match_keypoints(im1, im2)
+    matches = match_keypoints(im1, im2, show_matches=False)
+    print(f"Found {len(matches)} matches")
