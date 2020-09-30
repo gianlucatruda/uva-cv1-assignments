@@ -30,6 +30,16 @@ Pipfile
 03/*.ppm
 03/*.pgm
 03/figs/
+03/output/
+
+# No images for lab3
+03/person_toy
+03/pingpong
+*.ppm
+*.pgm
+*.png
+*.jpg
+*.jpeg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -3,8 +3,6 @@ import numpy as np
 from scipy import signal
 from matplotlib import pyplot as plt
 
-# WINSIZE = (15, 15) TODO
-
 
 def lucas_kanade(image_1, image_2):
     """ Run Lucas Kanade on a pair of images using 15x15 windows.
@@ -53,10 +51,6 @@ def lk_on_window(img1, img2):
 
     # Initialize flow matrix
     V = np.zeros((w, w, 2))
-
-    v = np.zeros(img1.shape)
-    # print(v)
-    u = np.zeros(img1.shape)
 
     # Get A and b
     A = np.column_stack((fx.flatten(), fy.flatten()))
