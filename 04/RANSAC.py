@@ -5,25 +5,27 @@ import numpy as np
 import scipy
 import math
 
-no_param = 6
+
 no_data_required = 3
+no_params = 6
 
 
-def RANSAC(image_1, image_2, P=20, N=100, RANSAC_TRESHOLD=200):
+# TODO: Treshold should be 10 pixels, but is now not expressed in pixels
+def RANSAC(image_1, image_2, P=20, N=600, RANSAC_TRESHOLD=100):
     coords, kp1, kp2 = match_keypoints(image_1, image_2,
                                     show_keypoints=True,
                                     limit=10,
                                     ratio=0.2)
 
-    best_parameters = [0] * no_param
+    best_parameters = [0] * no_params
     best_fit = None
     inliers = []
 
     for n in range(N):
         sampling = random.choices(coords, k=P)
-        # Is maybeinliers
+        # = maybeinliers
         new_param = get_parameters(sampling)
-        # Is maybemodel
+        # = maybemodel
 
         also_inliers = []
         best_error = 500
@@ -31,7 +33,7 @@ def RANSAC(image_1, image_2, P=20, N=100, RANSAC_TRESHOLD=200):
         # Get other inlier points
         for (x, y), (xprime, yprime) in coords:
             if ((x, y), (xprime, yprime)) not in sampling:
-                # sum squared error
+                # squared error (distance between points)
                 point_error = math.sqrt((x-xprime)**2)+((y-yprime)**2)
                 if point_error < RANSAC_TRESHOLD:
                     also_inliers.append([(x, y), (xprime, yprime)])
@@ -40,35 +42,23 @@ def RANSAC(image_1, image_2, P=20, N=100, RANSAC_TRESHOLD=200):
         if len(also_inliers) > no_data_required:
             new_model = get_parameters(sampling + also_inliers)
 
+            # TODO: figure out how to get this new_error
+            # If current error is lower, this model is better. Then save the new model.
             new_error = 0
             if new_error < best_error:
                 best_fit = new_model
                 best_parameters = new_param
                 inliers = sampling + also_inliers
 
-        print(best_parameters)
 
-    bf = cv2.BFMatcher()
-    inliers_t = np.transpose(inliers)
-    matches = bf.match(inliers_t[0], inliers_t[1])
+    # inliers_t = np.transpose(inliers)
+    # bf = cv2.BFMatcher()
+    # matches = bf.match(inliers_t[0], inliers_t[1])
 
+    # TODO: figure out the input for visualization
     visualize(kp1, kp2, matches)
 
     return best_parameters, best_fit
-
-
-def fit(data, input, output):
-    A = np.vstack([data[:, i] for i in input]).T
-    B = np.vstack([data[:, i] for i in output]).T
-    x, resids, rank, s = scipy.linalg.lstsq(A, B)
-    return x
-
-# def get_error(data, model):
-#     A = np.vstack([data[:,i] for i in input_columns]).T
-#     B = np.vstack([data[:,i] for i in output_columns]).T
-#     B_fit = np.dot(A, model)
-#     err_per_point = np.sum((B-B_fit)**2,axis=1) # sum squared error per row
-#     return err_per_point
 
 
 def get_parameters(data):
@@ -93,6 +83,7 @@ def get_parameters(data):
     return new_param
 
 
+# TODO: Get visualization to work
 def visualize(kp1, kp2, good):
     # cv.drawMatchesKnn expects list of lists as matches.
     img3 = cv2.drawMatchesKnn(
