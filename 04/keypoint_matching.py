@@ -6,6 +6,7 @@ import random
 def match_keypoints(im1, im2,
                     show_keypoints=False,
                     show_matches=True,
+                    ratio=0.2,
                     limit=None):
     # New API https://stackoverflow.com/questions/18561910/cant-use-surf-sift-in-opencv#32735795
     sift = cv2.xfeatures2d.SIFT_create()
@@ -15,12 +16,20 @@ def match_keypoints(im1, im2,
     bf = cv2.BFMatcher()
     matches = bf.knnMatch(des1, des2, k=2)
 
+    # Apply ratio test
+    good = []
+    for m, n in matches:
+        if m.distance < ratio * n.distance:
+            good.append([m])
+
+    coords = []
+    for match in good:
+        p1 = kp1[match[0].queryIdx].pt
+        p2 = kp2[match[0].trainIdx].pt
+        coords.append((p1, p2))
+        # print(p1, p2)
+
     if show_matches:
-        # Apply ratio test
-        good = []
-        for m, n in matches:
-            if m.distance < 0.2 * n.distance:
-                good.append([m])
 
         # Apply optional limit and take random subset
         random.shuffle(good)
@@ -47,7 +56,7 @@ def match_keypoints(im1, im2,
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    return matches, kp1, kp2
+    return coords, kp1, kp2
 
 
 if __name__ == '__main__':
@@ -59,5 +68,6 @@ if __name__ == '__main__':
 
     matches, _, _ = match_keypoints(im1, im2,
                                     show_matches=True,
-                                    limit=10)
+                                    limit=10,
+                                    ratio=0.2)
     print(f"Found {len(matches)} matches")
