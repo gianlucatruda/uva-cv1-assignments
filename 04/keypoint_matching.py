@@ -51,10 +51,10 @@ def match_keypoints(im1, im2,
         img2 = cv2.drawKeypoints(
             im2, kp2, im2,
             flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        cv2.imshow('image1', img1)
-        cv2.imshow('image2', img2)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow('image1', img1)
+        # cv2.imshow('image2', img2)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
     return coords, kp1, kp2
 

@@ -17,6 +17,7 @@ def RANSAC(image_1, image_2, P=20, N=100, RANSAC_TRESHOLD=200):
 
     best_parameters = [0] * no_param
     best_fit = None
+    inliers = []
 
     for n in range(N):
         sampling = random.choices(coords, k=P)
@@ -38,15 +39,22 @@ def RANSAC(image_1, image_2, P=20, N=100, RANSAC_TRESHOLD=200):
         # Check if model is good. If so, check how good.
         if len(also_inliers) > no_data_required:
             new_model = get_parameters(sampling + also_inliers)
-            print('new model param')
-            print(len(new_param))
+
             new_error = 0
             if new_error < best_error:
                 best_fit = new_model
                 best_parameters = new_param
+                inliers = sampling + also_inliers
+
         print(best_parameters)
-        print(best_fit)
-        return best_parameters, best_fit
+
+    bf = cv2.BFMatcher()
+    inliers_t = np.transpose(inliers)
+    matches = bf.match(inliers_t[0], inliers_t[1])
+
+    visualize(kp1, kp2, matches)
+
+    return best_parameters, best_fit
 
 
 def fit(data, input, output):
@@ -85,8 +93,30 @@ def get_parameters(data):
     return new_param
 
 
+def visualize(kp1, kp2, good):
+    # cv.drawMatchesKnn expects list of lists as matches.
+    img3 = cv2.drawMatchesKnn(
+        im1, kp1, im2, kp2, good, None,
+        flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    cv2.imshow('matching', img3)
+    cv2.imwrite('figs/matches.png', img3)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    img1 = cv2.drawKeypoints(
+        im1, kp1, im1,
+        flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    img2 = cv2.drawKeypoints(
+        im2, kp2, im2,
+        flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    cv2.imshow('image1', img1)
+    cv2.imshow('image2', img2)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
 if __name__ == '__main__':
     im1 = cv2.imread('boat1.pgm')
     im2 = cv2.imread('boat2.pgm')
-    RANSAC(im1, im2)
+    best_param, best_fit = RANSAC(im1, im2)
 
