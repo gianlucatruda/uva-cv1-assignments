@@ -3,12 +3,13 @@ import cv2
 import random
 import numpy as np
 import scipy
+import math
 
 no_param = 6
 no_data_required = 20
 
 
-def RANSAC(image_1, image_2, P=10, N=10, RANSAC_TRESHOLD=10):
+def RANSAC(image_1, image_2, P=20, N=10, RANSAC_TRESHOLD=100):
     coords, kp1, kp2 = match_keypoints(image_1, image_2,
                                     show_keypoints=True,
                                     limit=10,
@@ -19,16 +20,19 @@ def RANSAC(image_1, image_2, P=10, N=10, RANSAC_TRESHOLD=10):
 
     for n in range(N):
         sampling = random.choices(coords, k=P)
+        # Is maybeinliers
         new_param = get_parameters(sampling)
+        # Is maybemodel
 
         also_inliers = []
-        best_error = 100
+        best_error = 500
 
         # Get other inlier points
         print(coords)
         for (x, y), (xprime, yprime) in coords:
             if ((x, y), (xprime, yprime)) not in sampling:
-                point_error =
+                # sum squared error
+                point_error = math.sqrt((x-xprime)**2)+((y-yprime)**2)
                 print(point_error)
                 if point_error < RANSAC_TRESHOLD:
                     also_inliers.append([(x, y), (xprime, yprime)])
@@ -36,7 +40,7 @@ def RANSAC(image_1, image_2, P=10, N=10, RANSAC_TRESHOLD=10):
         # Check if model is good. If so, check how good.
         if len(also_inliers) > no_data_required:
             new_model = get_parameters(sampling + also_inliers)
-            new_error = 
+            new_error = 0
             if new_error < best_error:
                 best_fit = new_model
                 best_parameters = new_param
@@ -44,6 +48,11 @@ def RANSAC(image_1, image_2, P=10, N=10, RANSAC_TRESHOLD=10):
         print(best_fit)
         return best_parameters, best_fit
 
+def fit(data, input, output):
+    A = np.vstack([data[:, i] for i in input]).T
+    B = np.vstack([data[:, i] for i in output]).T
+    x, resids, rank, s = scipy.linalg.lstsq(A, B)
+    return x
 
 # def get_error(data, model):
 #     A = np.vstack([data[:,i] for i in input_columns]).T
