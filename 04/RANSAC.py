@@ -6,10 +6,10 @@ import scipy
 import math
 
 no_param = 6
-no_data_required = 20
+no_data_required = 3
 
 
-def RANSAC(image_1, image_2, P=20, N=10, RANSAC_TRESHOLD=100):
+def RANSAC(image_1, image_2, P=20, N=100, RANSAC_TRESHOLD=200):
     coords, kp1, kp2 = match_keypoints(image_1, image_2,
                                     show_keypoints=True,
                                     limit=10,
@@ -28,18 +28,18 @@ def RANSAC(image_1, image_2, P=20, N=10, RANSAC_TRESHOLD=100):
         best_error = 500
 
         # Get other inlier points
-        print(coords)
         for (x, y), (xprime, yprime) in coords:
             if ((x, y), (xprime, yprime)) not in sampling:
                 # sum squared error
                 point_error = math.sqrt((x-xprime)**2)+((y-yprime)**2)
-                print(point_error)
                 if point_error < RANSAC_TRESHOLD:
                     also_inliers.append([(x, y), (xprime, yprime)])
 
         # Check if model is good. If so, check how good.
         if len(also_inliers) > no_data_required:
             new_model = get_parameters(sampling + also_inliers)
+            print('new model param')
+            print(len(new_param))
             new_error = 0
             if new_error < best_error:
                 best_fit = new_model
@@ -47,6 +47,7 @@ def RANSAC(image_1, image_2, P=20, N=10, RANSAC_TRESHOLD=100):
         print(best_parameters)
         print(best_fit)
         return best_parameters, best_fit
+
 
 def fit(data, input, output):
     A = np.vstack([data[:, i] for i in input]).T
