@@ -66,28 +66,32 @@ def get_parameters(data):
     return x
 
 
-def visualise(im1, params):
+def visualise(src, params, shape):
 
     # Unpack params
     m1, m2, m3, m4, t1, t2 = best_params
     M = np.array([[m1, m2], [m3, m4]])
     t = np.array([t1, t2])
 
-    # Construct new image
-    im = np.zeros((1000, 1200, 3))
+    # Construct new image (y, x, 3)
+    dst = np.zeros((shape[1], shape[0], 3))
 
     # Loop through pixels, transform, and write to new image
-    for x in range(im.shape[1]):
-        for y in range(im.shape[0]):
+    for x in range(src.shape[1]):
+        for y in range(src.shape[0]):
             # Apply transformation (x',y') = M.[x,y]T + shift
             xt, yt = M @ [x, y] + t
             xt, yt = round(xt), round(yt)
-            if yt < im1.shape[0] and xt < im1.shape[1]:
-                im[y, x] = im1[yt, xt]
-    cv2.imwrite('figs/transformed.png', im)
+            if yt < dst.shape[0] and xt < dst.shape[1] and min(xt, yt) >= 0:
+                dst[yt, xt] = src[y, x]
+    cv2.imwrite('figs/transformed.png', dst)
 
 
 if __name__ == '__main__':
+
+    # Set shape of output images (width, height)
+    DSTSHAPE = (950, 800)
+
     if not os.path.exists('figs'):
         os.makedirs('figs')
 
@@ -117,5 +121,12 @@ if __name__ == '__main__':
     print(t)
 
     print("\nVisualising transformed image...\n")
-    visualise(im2, best_params)
+    visualise(im1, best_params, DSTSHAPE)
     print("Image saved to figs/transformed.png\n")
+
+    print("Visualising cv2.warpAffine...\n")
+    # Consruct the transformation matrix the way CV2 likes it
+    _M = np.hstack((M, t.reshape(2, 1)))
+    dst = cv2.warpAffine(im1, _M, DSTSHAPE)
+    cv2.imwrite('figs/warpaffine.png', dst)
+    print("Image saved to figs/warpaffine.png\n")
