@@ -1,64 +1,49 @@
-from keypoint_matching import match_keypoints
 import cv2
 import random
 import numpy as np
 import scipy
 import math
 
+from keypoint_matching import match_keypoints
 
 no_data_required = 3
 no_params = 6
 
 
-# TODO: Treshold should be 10 pixels, but is now not expressed in pixels
-def RANSAC(image_1, image_2, P=20, N=600, RANSAC_TRESHOLD=100):
-    coords, kp1, kp2 = match_keypoints(image_1, image_2,
-                                    show_keypoints=True,
-                                    limit=10,
-                                    ratio=0.2)
+def ransac(coords, P=20, N=600, threshold=10):
 
     best_parameters = [0] * no_params
-    best_fit = None
-    inliers = []
+    best_inliers = -1
 
     for n in range(N):
+        # print(f"{n} of {N} iterations...", end='\r')
+
+        inliers = 0
+
+        # Pick P matches at random from the total set of matches T
         sampling = random.choices(coords, k=P)
-        # = maybeinliers
-        new_param = get_parameters(sampling)
-        # = maybemodel
 
-        also_inliers = []
-        best_error = 500
+        # Construct A and b using the P pairs of points, then solve for x
+        params = get_parameters(sampling)
 
-        # Get other inlier points
+        # Construct the transformation matrix M and vector t
+        m1, m2, m3, m4, t1, t2 = params
+        M = np.array([[m1, m2], [m3, m4]])
+        t = np.array([t1, t2])
+
+        # Apply the transformation using the parameters to all T points
         for (x, y), (xprime, yprime) in coords:
-            if ((x, y), (xprime, yprime)) not in sampling:
-                # squared error (distance between points)
-                point_error = math.sqrt((x-xprime)**2)+((y-yprime)**2)
-                if point_error < RANSAC_TRESHOLD:
-                    also_inliers.append([(x, y), (xprime, yprime)])
+            xt, yt = M @ [x, y] + t
+            # Check if inlier using Euclidean distance
+            if np.sqrt((xt - xprime)**2 + (yt - yprime)**2) < threshold:
+                inliers += 1
 
-        # Check if model is good. If so, check how good.
-        if len(also_inliers) > no_data_required:
-            new_model = get_parameters(sampling + also_inliers)
+        # If this is a good fit, update parameters
+        if inliers > best_inliers:
+            best_inliers = inliers
+            best_parameters = params
 
-            # TODO: figure out how to get this new_error
-            # If current error is lower, this model is better. Then save the new model.
-            new_error = 0
-            if new_error < best_error:
-                best_fit = new_model
-                best_parameters = new_param
-                inliers = sampling + also_inliers
-
-
-    # inliers_t = np.transpose(inliers)
-    # bf = cv2.BFMatcher()
-    # matches = bf.match(inliers_t[0], inliers_t[1])
-
-    # TODO: figure out the input for visualization
-    visualize(kp1, kp2, matches)
-
-    return best_parameters, best_fit
+    return best_parameters
 
 
 def get_parameters(data):
@@ -68,8 +53,8 @@ def get_parameters(data):
     # Get matrix A and vector b
     for (x, y), (xprime, yprime) in data:
         A_components.append(np.array([
-            [x, y, 1, 0, 0, 0],
-            [0, 0, 0, x, y, 1]
+            [x, y, 0, 0, 1, 0],
+            [0, 0, x, y, 0, 1]
         ]))
         b_components.append(np.array([xprime, yprime]))
 
@@ -77,10 +62,9 @@ def get_parameters(data):
     b = np.hstack(b_components)
 
     # Get new param x = (m1, m2, m3, m4, t1, t2) by solving the equation Ax = b.
-    new_param = np.linalg.pinv(A) * b
-    # = maybemodel
+    x = np.linalg.pinv(A) @ b
 
-    return new_param
+    return x
 
 
 # TODO: Get visualization to work
@@ -109,5 +93,17 @@ def visualize(kp1, kp2, good):
 if __name__ == '__main__':
     im1 = cv2.imread('boat1.pgm')
     im2 = cv2.imread('boat2.pgm')
-    best_param, best_fit = RANSAC(im1, im2)
 
+    print("Loading coordinates...", end='\r')
+    coords, kp1, kp2 = match_keypoints(
+        im1, im2,
+        show_keypoints=False,
+        show_matches=False,
+        limit=None,
+        ratio=0.2)
+
+    best_params = ransac(
+        coords,
+        P=20,
+        N=600,
+        threshold=10)
