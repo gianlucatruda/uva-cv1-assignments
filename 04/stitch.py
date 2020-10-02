@@ -25,7 +25,7 @@ def stitch_images(im1, im2):
     b = np.hstack(b_components)
 
     # Solve for t using RANSAC
-    t = ransac(coords, P=20, N=50, threshold=10)
+    t = ransac(coords, P=20, N=100, threshold=3)
 
     # Build transformation matrix and shift vector
     m1, m2, m3, m4, t1, t2 = t
