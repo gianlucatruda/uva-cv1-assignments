@@ -28,6 +28,7 @@ def match_keypoints(im1, im2,
         p2 = kp2[match[0].trainIdx].pt
         coords.append((p1, p2))
         # print(p1, p2)
+    print(f"Number of good matches:{len(coords)}")
 
     if show_matches:
 
@@ -70,4 +71,3 @@ if __name__ == '__main__':
                                     show_matches=True,
                                     limit=10,
                                     ratio=0.2)
-    print(f"Found {len(matches)} matches")
