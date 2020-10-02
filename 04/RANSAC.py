@@ -95,6 +95,7 @@ if __name__ == '__main__':
     if not os.path.exists('figs'):
         os.makedirs('figs')
 
+    # Simply swap these to transform 2 to 1 instead
     im1 = cv2.imread('boat1.pgm')
     im2 = cv2.imread('boat2.pgm')
 
