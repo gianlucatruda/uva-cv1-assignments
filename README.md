@@ -2,7 +2,7 @@
 Computer Vision 1 assingments for group M05
 
 - [x] Lab 1
-- [ ] Lab 2
-- [ ] Lab 3
-- [ ] Lab 4
-- [ ] Project
+- [x] Lab 2
+- [x] Lab 3
+- [x] Lab 4
+- [ ] Projects
