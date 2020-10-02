@@ -74,11 +74,11 @@ def visualise(im1, params):
     t = np.array([t1, t2])
 
     # Construct new image
-    im = np.zeros((1000, 1000, 3))
+    im = np.zeros((1000, 1200, 3))
 
     # Loop through pixels, transform, and write to new image
-    for x in range(im1.shape[1]):
-        for y in range(im1.shape[0]):
+    for x in range(im.shape[1]):
+        for y in range(im.shape[0]):
             # Apply transformation (x',y') = M.[x,y]T + shift
             xt, yt = M @ [x, y] + t
             xt, yt = round(xt), round(yt)
@@ -118,3 +118,4 @@ if __name__ == '__main__':
 
     print("\nVisualising transformed image...\n")
     visualise(im2, best_params)
+    print("Image saved to figs/transformed.png\n")
