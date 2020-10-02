@@ -1,8 +1,7 @@
 import cv2
 import random
 import numpy as np
-import scipy
-import math
+import os
 
 from keypoint_matching import match_keypoints
 
@@ -10,7 +9,7 @@ no_data_required = 3
 no_params = 6
 
 
-def ransac(coords, P=20, N=600, threshold=10):
+def ransac(coords, P=20, N=50, threshold=10):
 
     best_parameters = [0] * no_params
     best_inliers = -1
@@ -67,34 +66,35 @@ def get_parameters(data):
     return x
 
 
-# TODO: Get visualization to work
-def visualize(kp1, kp2, good):
-    # cv.drawMatchesKnn expects list of lists as matches.
-    img3 = cv2.drawMatchesKnn(
-        im1, kp1, im2, kp2, good, None,
-        flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    cv2.imshow('matching', img3)
-    cv2.imwrite('figs/matches.png', img3)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+def visualise(im1, params):
 
-    img1 = cv2.drawKeypoints(
-        im1, kp1, im1,
-        flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    img2 = cv2.drawKeypoints(
-        im2, kp2, im2,
-        flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    cv2.imshow('image1', img1)
-    cv2.imshow('image2', img2)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # Unpack params
+    m1, m2, m3, m4, t1, t2 = best_params
+    M = np.array([[m1, m2], [m3, m4]])
+    t = np.array([t1, t2])
+
+    # Construct new image
+    im = np.zeros((1000, 1000, 3))
+
+    # Loop through pixels, transform, and write to new image
+    for x in range(im1.shape[1]):
+        for y in range(im1.shape[0]):
+            # Apply transformation (x',y') = M.[x,y]T + shift
+            xt, yt = M @ [x, y] + t
+            xt, yt = round(xt), round(yt)
+            if yt < im1.shape[0] and xt < im1.shape[1]:
+                im[y, x] = im1[yt, xt]
+    cv2.imwrite('figs/transformed.png', im)
 
 
 if __name__ == '__main__':
+    if not os.path.exists('figs'):
+        os.makedirs('figs')
+
     im1 = cv2.imread('boat1.pgm')
     im2 = cv2.imread('boat2.pgm')
 
-    print("Loading coordinates...", end='\r')
+    print("Loading coordinates...\n")
     coords, kp1, kp2 = match_keypoints(
         im1, im2,
         show_keypoints=False,
@@ -102,8 +102,19 @@ if __name__ == '__main__':
         limit=None,
         ratio=0.2)
 
+    print("Running RANSAC...\n")
     best_params = ransac(
         coords,
-        P=20,
-        N=600,
-        threshold=10)
+        P=15,
+        N=50,
+        threshold=5)
+
+    print("Best params for matrix M and vector t:")
+    m1, m2, m3, m4, t1, t2 = best_params
+    M = np.array([[m1, m2], [m3, m4]])
+    t = np.array([t1, t2])
+    print(M)
+    print(t)
+
+    print("\nVisualising transformed image...\n")
+    visualise(im2, best_params)
