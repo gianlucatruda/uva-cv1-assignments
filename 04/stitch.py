@@ -23,8 +23,8 @@ def stitch_images(im1, im2):
     A = np.vstack(A_components)
     b = np.hstack(b_components)
 
-    # Solve for t using RANSAC (TODO switch to our own later)
-    t, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
+    # Solve for t using RANSAC
+    t = ransac(coords, P=20, N=50, threshold=10)
 
     # Build transformation matrix and shift vector
     m1, m2, m3, m4, t1, t2 = t
