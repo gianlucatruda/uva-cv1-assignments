@@ -3,6 +3,7 @@ import cv2
 import os
 
 from keypoint_matching import match_keypoints
+from RANSAC import ransac
 
 
 def stitch_images(im1, im2):
@@ -34,36 +35,40 @@ def stitch_images(im1, im2):
     print("Transformation matrix:", M, sep='\n')
     print("Translation vector:", shift, sep='\n')
 
-    # 2. TODO estimate the size of the stitched image by calculating the transformed
+    # 2. estimate the size of the stitched image by calculating the transformed
     # coordinates of the second image
-
-    xmax, ymax, _ = im2.shape
+    ymax, xmax, _ = im2.shape
     new_corners = []
-    # for p in np.array([[0, 0], [xmax, 0],
-    #                    [0, ymax], [xmax, ymax]]):
-    #     p_trans = M @ p.T + shift.T
-    #     new_corners.append(p_trans)
-    # new_corners = np.array(new_corners)
 
-    # xmin, xmax = new_corners[:, 0].min(), new_corners[:, 0].max()
-    # ymin, ymax = new_corners[:, 1].min(), new_corners[:, 1].max()
+    # Loop through the old corners of im2
+    for xt, yt in np.array([[0, 0], [xmax, 0],
+                            [0, ymax], [xmax, ymax]]):
+        # Subtract the shift and then use inverse of M
+        x, y = np.linalg.inv(M) @ ([xt, yt] - shift.T)
+        new_corners.append([x, y])
+    new_corners = np.array(new_corners)
 
-    # new_x, new_y = round(im1.shape[0] + xmax - xmin) + 1, round(im1.shape[1] + ymax - ymin) + 1
-    new_x, new_y = 600, 600
-    img = np.zeros((new_x, new_y, 3))
+    # Take extreme values
+    xmax = round(new_corners[:, 0].max()) + 1
+    ymax = round(new_corners[:, 1].max()) + 1
+    new_x, new_y = max(im1.shape[1], xmax), max(im1.shape[0], ymax)
+
+    # Construct new image of these dimensions
+    img = np.zeros((new_y, new_x, 3))
 
     # 3. combine the left.jpg with the transformed right.jpg in one image
     for x in range(new_x):
         for y in range(new_y):
-            if x < im1.shape[1] and y < im1.shape[0]:
-                img[y, x] = im1[y, x]
-
-            # xt = m1*x + m2*y + t1 and yt = m3*x + m4*y + t2
+            # Apply transformation (x',y') = M.[x,y]T + shift
             xt, yt = M @ [x, y] + shift.T
             xt, yt = round(xt), round(yt)
 
+            # Fill in pixels from right image
             if xt < im2.shape[1] and yt < im2.shape[0] and min(xt, yt) >= 0:
                 img[y, x] = im2[yt, xt]
+            # Fill in pixels from left image
+            if x < im1.shape[1] and y < im1.shape[0]:
+                img[y, x] = im1[y, x]
 
     return img
 
