@@ -41,6 +41,9 @@ Pipfile
 *.jpg
 *.jpeg
 
+# No data for final part 1
+*/stl10_binary
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
