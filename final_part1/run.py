@@ -3,25 +3,38 @@ import numpy as np
 import cv2
 from glob import glob
 from sklearn.cluster import KMeans
-from sklearn import svm
+import matplotlib.pyplot as plt
+from sklearn import svm, datasets
 
-# airplane: 1, bird: 2, ship: 9, horse: 7, car: 3
-labels = [1, 2, 9, 7, 3]
+# cluster_sizes = [400, 1000, 4000]
 
-## Read in the train files
-dataset = [[cv2.imread(path, cv2.IMREAD_GRAYSCALE) for path in glob(f'{os.path.realpath(".")}/img/{label}/*.png')] for label in labels]
 
-# cv2.imshow('window', dataset[0][0])
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+def kmeans_cluster(points, K):
+    descriptors = np.array(points[0])
+    for descriptor in points[1:]:
+        descriptors = np.vstack((descriptors, descriptor))
 
-sift = cv2.SIFT_create()
-points = np.zeros((128))
+    # kmeans = [KMeans(n_clusters=k).fit(points) for k in K]
+    kmeans = KMeans(n_clusters=2).fit(descriptors)
+    return kmeans
 
-for label in labels:
-    for path in glob(f'{os.path.realpath(".")}/img/{label}/*.png'):
-        image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-        _, des = sift.detectAndCompute(image, None)
-        points = np.vstack([points, des])
 
-points = points[1:]
+if __name__ == "__main__":
+    # airplane: 1, bird: 2, ship: 9, horse: 7, car: 3
+    labels = [1, 2, 9, 7, 3]
+
+    sift = cv2.SIFT_create()
+    points = np.zeros((128))
+
+    for label in labels:
+        # for path in glob(f'{os.path.realpath(".")}/img/{label}/*.png'):
+        for path in glob(f'{os.path.realpath(".")}/img/test_img/*.png'):
+            image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+            _, des = sift.detectAndCompute(image, None)
+            points = np.vstack([points, des])
+
+    print("SIFT completed")
+
+    kmeans = kmeans_cluster(points, cluster_sizes)
+    print("cluster completed")
+    print(kmeans)
