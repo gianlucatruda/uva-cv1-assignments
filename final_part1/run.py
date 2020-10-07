@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from sklearn import svm, datasets
 
 # cluster_sizes = [400, 1000, 4000]
+cluster_sizes = 2
 
 
 def kmeans_cluster(points, K):
@@ -15,7 +16,7 @@ def kmeans_cluster(points, K):
         descriptors = np.vstack((descriptors, descriptor))
 
     # kmeans = [KMeans(n_clusters=k).fit(points) for k in K]
-    kmeans = KMeans(n_clusters=2).fit(descriptors)
+    kmeans = KMeans(n_clusters=K).fit(descriptors)
     return kmeans
 
 
