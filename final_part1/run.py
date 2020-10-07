@@ -18,21 +18,23 @@ if __name__ == "__main__":
 
     if not load:
         sift = cv2.SIFT_create()
-        points = None
+        descriptors = None
+        Y = None
         for label in labels:
             for path in tqdm(glob(f'{os.path.realpath(".")}/img/{label}/*.png')):
             # for path in glob(f'{os.path.realpath(".")}/img/test_img/*.png'):
                 image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
                 _, des = sift.detectAndCompute(image, None)
-                if points is None:
-                    points = des
-                points = np.vstack([points, des])
-        
+                if descriptors is None:
+                    descriptors = des
+                    Y = [label]*des.shape[0]
+                descriptors = np.vstack([descriptors, des])
+                Y = np.hstack([Y, [label]*des.shape[0]])
         print("SIFT completed")
-        np.savetxt('points.txt', points)
+        np.savetxt('points.txt', descriptors)
     else:
-        points = np.loadtxt('points.txt')
+        descriptors = np.loadtxt('points.txt')
 
-    kmeans = KMeans(n_clusters=cluster_sizes).fit(points)
+    kmeans = KMeans(n_clusters=cluster_sizes).fit(descriptors)
     print("cluster completed")
     print(kmeans)
