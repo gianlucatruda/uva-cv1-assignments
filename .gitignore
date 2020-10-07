@@ -42,6 +42,7 @@ Pipfile
 *.jpeg
 
 # No data for final part 1
+*.txt
 */stl10_binary
 
 # Byte-compiled / optimized / DLL files
