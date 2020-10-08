@@ -26,16 +26,16 @@ DEPTH = 3
 SIZE = HEIGHT * WIDTH * DEPTH
 
 # path to the directory with the data
-DATA_DIR = '.'
+DATA_DIR = './test/'
 
 # url of the binary data
 DATA_URL = 'http://ai.stanford.edu/~acoates/stl10/stl10_binary.tar.gz'
 
 # path to the binary train file with image data
-DATA_PATH = './stl10_binary/train_X.bin'
+DATA_PATH = './stl10_binary/test_X.bin'
 
 # path to the binary train file with labels
-LABEL_PATH = './stl10_binary/train_y.bin'
+LABEL_PATH = './stl10_binary/test_y.bin'
 
 
 def read_labels(path_to_labels):
@@ -135,7 +135,7 @@ def save_images(images, labels):
     i = 0
     for image in images:
         label = labels[i]
-        directory = './img/' + str(label) + '/'
+        directory = 'test/' + str(label) + '/'
         try:
             os.makedirs(directory, exist_ok=True)
         except OSError as exc:
