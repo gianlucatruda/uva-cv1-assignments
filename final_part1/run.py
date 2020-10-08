@@ -25,7 +25,7 @@ from sklearn import svm, datasets
 # Mostly copied this function from github!
 def extractFeatures(kmeans, points, no_clusters):
     im_features = np.array([np.zeros(no_clusters) for _ in range(len(points))])
-    for i in range(len(points)):
+    for i in tqdm(range(len(points))):
         for j in range(len(points[i])):
             feature = points[i][j].reshape(1, 128)
             idx = kmeans.predict(feature)
@@ -33,22 +33,26 @@ def extractFeatures(kmeans, points, no_clusters):
     return im_features
 
 
-def hist_visual(x, n_bins):
-    fig, axs = plt.subplots(1, 2, tight_layout=True)
-    axs[1].hist(x, bins=n_bins, density=True)
+def hist_visual(histogram, path, n_bins=10):
+    plt.subplot(1,2,1)
+    plt.imshow(plt.imread(path))
+    plt.subplot(1,2,2)
+    plt.hist(histogram, bins=n_bins)
+    plt.show()
 
 
 if __name__ == "__main__":
     # airplane: 1, bird: 2, ship: 9, horse: 7, car: 3
     labels = [1, 2, 9, 7, 3]
-    cluster_sizes = 500
+    cluster_sizes = 100
     sift = cv2.SIFT_create()
     visual_vocab_imgs = []
     visual_dict_imgs = []
     Y = []
+    paths = []
     start = datetime.now()
     for label in labels:
-        image_paths = glob(f'{os.path.realpath(".")}/img/{label}/*.png')
+        image_paths = sorted(glob(f'{os.path.realpath(".")}/img/{label}/*.png'))
         for ind, path in tqdm(enumerate(image_paths)):
         #for path in glob(f'{os.path.realpath(".")}/img/test_img/*.png'):
             image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
@@ -57,9 +61,8 @@ if __name__ == "__main__":
                 visual_vocab_imgs.append(des)
             else:
                 visual_dict_imgs.append(des)
+                paths.append(path)
                 Y.append(label)
-        print(f"Visual vocabulary images of label {label}: {len(visual_vocab_imgs)}")
-        print(f"Visual dictionary images of label {label}: {len(visual_dict_imgs)}")
     print("SIFT completed")
     print(f"Visual vocabulary images: {len(visual_vocab_imgs)}")
     print(f"Visual dictionary images: {len(visual_dict_imgs)}")
@@ -71,4 +74,5 @@ if __name__ == "__main__":
 
     features = extractFeatures(kmeans, visual_dict_imgs, no_clusters=cluster_sizes)
     normalized = preprocessing.normalize(features)
-    # hist_visual(kmeans)
+
+    hist_visual(normalized[0], paths[0])
