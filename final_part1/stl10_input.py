@@ -1,13 +1,12 @@
-'''
-Entirely copied from https://github.com/mttk/STL10/blob/master/stl10_input.py
-'''
+# referenced codes: https://cs.stanford.edu/~acoates/stl10/
+
 
 import os, sys, tarfile, errno
 import numpy as np
 import matplotlib.pyplot as plt
 
 if sys.version_info >= (3, 0, 0):
-    import urllib.request as urllib  # ugly but works
+    import urllib.request as urllib
 else:
     import urllib
 
@@ -123,7 +122,7 @@ def download_and_extract():
     if not os.path.exists(filepath):
         def _progress(count, block_size, total_size):
             sys.stdout.write('\rDownloading %s %.2f%%' % (filename,
-                                                          float(count * block_size) / float(total_size) * 100.0))
+                float(count * block_size) / float(total_size) * 100.0))
             sys.stdout.flush()
 
         filepath, _ = urllib.urlretrieve(DATA_URL, filepath, reporthook=_progress)
