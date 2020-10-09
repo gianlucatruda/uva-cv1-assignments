@@ -4,7 +4,7 @@ import cv2
 from glob import glob
 from datetime import datetime
 from sklearn.cluster import KMeans
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn import preprocessing
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -25,7 +25,7 @@ import pickle
 
 
 # Mostly copied this function from github!
-def extractFeatures(kmeans, points, no_clusters):
+def extract_features(kmeans, points, no_clusters):
     im_features = np.array([np.zeros(no_clusters) for _ in range(len(points))])
     for i in tqdm(range(len(points))):
         for j in range(len(points[i])):
@@ -43,16 +43,21 @@ def hist_visual(histogram, path, n_bins=10):
     plt.show()
 
 
+def binary(labels, i):
+    v = np.zeros(len(labels))
+    v[i] = 1
+    return v
 
-def read(labels, subdir='img', split=0.4):
+
+def read_and_prepare(labels, subdir='img', split=0.4):
     sift = cv2.SIFT_create()
     visual_vocab_imgs = []
     visual_dict_imgs = []
     Y = []
     paths = []
-    for label in labels:
-        # for path in glob(f'{os.path.realpath(".")}/img/test_img/*.png'):
-        image_paths = sorted(glob(f'{os.path.realpath(".")}/{subdir}/{label}/*.png'))
+    for i in range(len(labels)):
+        #image_paths = sorted(glob(f'{os.path.realpath(".")}/img/{10*labels[i]+labels[i]}/*.png'))
+        image_paths = sorted(glob(f'{os.path.realpath(".")}/{subdir}/{labels[i]}/*.png'))
         for ind, path in tqdm(enumerate(image_paths)):
             image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
             _, des = sift.detectAndCompute(image, None)
@@ -63,15 +68,17 @@ def read(labels, subdir='img', split=0.4):
             else:
                 visual_dict_imgs.append(des)
                 paths.append(path)
-                Y.append(label)
+                Y.append(binary(labels,i))
+    Y = np.vstack(Y)
     return visual_vocab_imgs, visual_dict_imgs, paths, Y
+
 
 
 if __name__ == "__main__":
     # airplane: 1, bird: 2, ship: 9, horse: 7, car: 3
     labels = [1, 2, 9, 7, 3]
-    cluster_sizes = 100
-    visual_vocab_imgs, visual_dict_imgs, paths, Y = read(labels)
+    cluster_sizes = 400
+    visual_vocab_imgs, visual_dict_imgs, paths, Y = read_and_prepare(labels)
 
     print("SIFT completed")
     print(f"Visual vocabulary images: {len(visual_vocab_imgs)}")
@@ -81,18 +88,23 @@ if __name__ == "__main__":
     kmeans = KMeans(n_clusters=cluster_sizes).fit(descriptors)
     print("cluster completed")
     print(kmeans)
+    pickle.dump(kmeans, open('kmeans.pkl', 'wb'))
 
-    features = extractFeatures(kmeans, visual_dict_imgs, no_clusters=cluster_sizes)
+
+    features = extract_features(kmeans, visual_dict_imgs, no_clusters=cluster_sizes)
     normalized = preprocessing.normalize(features)
 
-    #hist_visual(normalized[0], paths[0])
+    hist_visual(normalized[0], paths[0])
 
-    model = svm.SVC()
-    model.fit(normalized, Y)
-    pickle.dump(model, open('svm.pkl', 'wb'))
+    models = [svm.SVC() for _ in labels]
+    for i in range(len(models)):
+        models[i].fit(normalized, Y[:,i])
+        pickle.dump(models[i], open(f'svm_{i}.pkl', 'wb'))
 
-    _, visual_dict_imgs_test, paths_test, Y_test = read(labels, subdir='test', split=0.1)
-    X_test = preprocessing.normalize(extractFeatures(kmeans, visual_dict_imgs_test, no_clusters=cluster_sizes))
+    _, visual_dict_imgs_test, paths_test, Y_test = read_and_prepare(labels, subdir='test', split=0)
+    X_test = preprocessing.normalize(extract_features(kmeans, visual_dict_imgs_test, no_clusters=cluster_sizes))
 
-    preds = model.predict(X_test)
-    print(confusion_matrix(Y_test, preds))
+    for i in range(len(models)):
+        preds = models[i].predict(X_test)
+        print(accuracy_score(Y_test[:, i], preds))
+        print(confusion_matrix(Y_test[:, i], preds))
