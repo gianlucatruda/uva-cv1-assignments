@@ -2,29 +2,17 @@ import os
 import numpy as np
 import cv2
 from glob import glob
-from datetime import datetime
 from sklearn.cluster import KMeans
-from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn import preprocessing
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from sklearn import svm
 import pickle
+import pandas as pd
 
-# cluster_sizes = [400, 1000, 4000]
-
-# TODO: get multiple cluster sizes
-# def kmeans_cluster(points, K):
-#     descriptors = np.array(points[0])
-#     for descriptor in points[1:]:
-#         descriptors = np.vstack((descriptors, descriptor))
-#
-#     kmeans = [KMeans(n_clusters=k).fit(points) for k in K]
-#     return kmeans
-# # cluster_sizes = [400, 1000, 4000]
+from eval import calculate_mAP
 
 
-# Mostly copied this function from github!
 def extract_features(kmeans, points, no_clusters):
     im_features = np.array([np.zeros(no_clusters) for _ in range(len(points))])
     for i in tqdm(range(len(points))):
@@ -49,8 +37,13 @@ def binary(labels, i):
     return v
 
 
-def read_and_prepare(labels, subdir='img', split=0.4):
-    sift = cv2.SIFT_create()
+def read_and_prepare(labels, desc_type, subdir='img', split=0.4):
+    if desc_type in ['SIFT_RGB', 'SIFT_GRAY']:
+        sift = cv2.xfeatures2d.SIFT_create()
+    elif desc_type == 'SURF':
+        surf = cv2.xfeatures2d.SURF_create()
+    else:
+        raise NotImplemented("No such descriptor type")
     visual_vocab_imgs = []
     visual_dict_imgs = []
     Y = []
@@ -59,8 +52,15 @@ def read_and_prepare(labels, subdir='img', split=0.4):
         #image_paths = sorted(glob(f'{os.path.realpath(".")}/img/{10*labels[i]+labels[i]}/*.png'))
         image_paths = sorted(glob(f'{os.path.realpath(".")}/{subdir}/{labels[i]}/*.png'))
         for ind, path in tqdm(enumerate(image_paths)):
-            image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-            _, des = sift.detectAndCompute(image, None)
+            if desc_type == 'SIFT_RGB':
+                image = cv2.imread(path, cv2.IMREAD_COLOR)
+                _, des = sift.detectAndCompute(image, None)
+            elif desc_type == 'SIFT_GRAY':
+                image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+                _, des = sift.detectAndCompute(image, None)
+            elif desc_type == 'SURF':
+                image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+                _, des = surf.detectAndCompute(image, None)
             if des is None:
                 continue
             if ind < split * len(image_paths):
@@ -74,37 +74,56 @@ def read_and_prepare(labels, subdir='img', split=0.4):
 
 
 
-if __name__ == "__main__":
+def run(cluster_size = 400, desc_type='SIFT_GRAY'):
+    '''
+    cluster_size: size of the visual vocabulary
+    desc_type: type of descriptor, can be 'SIFT_GRAY', 'SIFT_RGB', 'SURF'
+    '''
     # airplane: 1, bird: 2, ship: 9, horse: 7, car: 3
     labels = [1, 2, 9, 7, 3]
-    cluster_sizes = 400
-    visual_vocab_imgs, visual_dict_imgs, paths, Y = read_and_prepare(labels)
+    visual_vocab_imgs, visual_dict_imgs, paths, Y = read_and_prepare(labels, desc_type)
 
-    print("SIFT completed")
+    print(f"{desc_type} completed")
     print(f"Visual vocabulary images: {len(visual_vocab_imgs)}")
     print(f"Visual dictionary images: {len(visual_dict_imgs)}")
 
     descriptors = np.vstack(visual_vocab_imgs)
-    kmeans = KMeans(n_clusters=cluster_sizes).fit(descriptors)
-    print("cluster completed")
-    print(kmeans)
-    pickle.dump(kmeans, open('kmeans.pkl', 'wb'))
+    kmeans = KMeans(n_clusters=cluster_size).fit(descriptors)
+    print("K-means completed")
+    pickle.dump(kmeans, open(f'{cluster_size}-{desc_type}-kmeans.pkl', 'wb'))
 
-
-    features = extract_features(kmeans, visual_dict_imgs, no_clusters=cluster_sizes)
+    features = extract_features(kmeans, visual_dict_imgs, no_clusters=cluster_size)
     normalized = preprocessing.normalize(features)
 
     hist_visual(normalized[0], paths[0])
 
     models = [svm.SVC() for _ in labels]
-    for i in range(len(models)):
+    print('Training binary models')
+    for i in tqdm(range(len(models))):
         models[i].fit(normalized, Y[:,i])
-        pickle.dump(models[i], open(f'svm_{i}.pkl', 'wb'))
+        pickle.dump(models[i], open(f'{cluster_size}-{desc_type}-svm_{i}.pkl', 'wb'))
 
-    _, visual_dict_imgs_test, paths_test, Y_test = read_and_prepare(labels, subdir='test', split=0)
-    X_test = preprocessing.normalize(extract_features(kmeans, visual_dict_imgs_test, no_clusters=cluster_sizes))
+    # prepare files for evaluation
+    print('Preparing test data')
+    _, visual_dict_imgs_test, paths_test, Y_test = read_and_prepare(labels, desc_type, subdir='test', split=0)
+    X_test = preprocessing.normalize(extract_features(kmeans, visual_dict_imgs_test, no_clusters=cluster_size))
+    np.savetxt(f'{cluster_size}-{desc_type}-X_test.txt', X_test)
+    np.savetxt(f'{cluster_size}-{desc_type}-Y_test.txt', Y_test)
+    np.savetxt(f'{cluster_size}-{desc_type}-paths_test.txt', paths_test, fmt="%s")
 
+    dfs = []
     for i in range(len(models)):
         preds = models[i].predict(X_test)
-        print(accuracy_score(Y_test[:, i], preds))
-        print(confusion_matrix(Y_test[:, i], preds))
+        p = np.array(models[i].decision_function(X_test))
+        df = pd.DataFrame(list(zip(preds, Y_test[:, i], preds == Y_test[:, i], p, paths_test)),
+                          columns=['preds', 'truth', 'correct', 'votes', 'paths'])
+        dfs.append(df)
+    print(f"mAP for this setting: {calculate_mAP(dfs)}")
+
+
+if __name__ == "__main__":
+    print('Experiment 1: Cluster sizes')
+    #for size in [400, 1000, 4000]:
+    #    run(cluster_size=size)
+    run(400, desc_type='SIFT_RGB')
+    #run(400, desc_type='SURF')

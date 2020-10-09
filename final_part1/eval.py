@@ -1,10 +1,7 @@
 import pandas as pd
-from sklearn import preprocessing
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
-
-from run import read_and_prepare, extract_features
 
 
 def calculate_APs(df):
@@ -47,26 +44,17 @@ def calculate_mAP(preds, show=True):
     return np.mean(aps)
 
 
+def run_loaded_experiments(labels=[1,2,9,7,3], cluser_size=400):
 
-labels = [1,2,9,7,3]
-cluster_sizes = 400
+    models = [pickle.load(open(f'svm_{i}.pkl', 'rb')) for i in range(len(labels))]
+    X_test = np.loadtxt('X_test.txt')
+    Y_test = np.loadtxt('Y_test.txt')
+    paths_test = np.loadtxt('paths_test.txt', dtype=str)
 
-models = [pickle.load(open(f'svm_{i}.pkl', 'rb')) for i in range(len(labels))]
-kmeans = pickle.load(open('kmeans.pkl', 'rb'))
-
-# _, visual_dict_imgs_test, paths_test, Y_test = read_and_prepare(labels, subdir='test', split=0)
-# X_test = preprocessing.normalize(extract_features(kmeans, visual_dict_imgs_test, no_clusters=cluster_sizes))
-# np.savetxt('X_test.txt', X_test)
-# np.savetxt('Y_test.txt', Y_test)
-# np.savetxt('paths_test.txt', paths_test,fmt="%s")
-X_test = np.loadtxt('X_test.txt')
-Y_test = np.loadtxt('Y_test.txt')
-paths_test = np.loadtxt('paths_test.txt',dtype=str)
-
-dfs = []
-for i in range(len(models)):
-    preds = models[i].predict(X_test)
-    p = np.array(models[i].decision_function(X_test))
-    df = pd.DataFrame(list(zip(preds, Y_test[:, i], preds == Y_test[:, i], p, paths_test)), columns=['preds', 'truth', 'correct', 'votes', 'paths'])
-    dfs.append(df)
-print(f"mAP for this setting: {calculate_mAP(dfs)}")
+    dfs = []
+    for i in range(len(models)):
+        preds = models[i].predict(X_test)
+        p = np.array(models[i].decision_function(X_test))
+        df = pd.DataFrame(list(zip(preds, Y_test[:, i], preds == Y_test[:, i], p, paths_test)), columns=['preds', 'truth', 'correct', 'votes', 'paths'])
+        dfs.append(df)
+    print(f"mAP for this setting: {calculate_mAP(dfs)}")
