@@ -1,8 +1,8 @@
 import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn import preprocessing
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
 
 from run import read_and_prepare, extract_features
 
@@ -19,7 +19,7 @@ def calculate_APs(df):
     ranked.index += 1
     ranked['cumulative_truth'] = ranked['truth'].cumsum()
     precision = ranked['truth'] * ranked['cumulative_truth'] / ranked.index
-    return precision.sum() / m
+    return precision.sum() / m, ranked
 
 
 def calculate_mAP(preds, show=True):
@@ -27,13 +27,24 @@ def calculate_mAP(preds, show=True):
     preds: prediction dataframe
     '''
 
-    ap = []
+    aps = []
+    top_bottoms = []
     for pred in preds:
-        ap.append(calculate_APs(pred))
+        ap, top_bottom = calculate_APs(pred)
+        aps.append(ap)
+        top_bottoms.append(top_bottom)
     if show:
-        print(ap)
-    return np.mean(ap)
+        print(f"Average precisions per class: {aps}")
+    top_bottoms = pd.concat(top_bottoms, axis=0).sort_values(by='votes', ascending=False)
+    for idx, path in enumerate(top_bottoms.head()['paths']):
+        plt.subplot(2,5,idx+1)
+        plt.imshow(plt.imread(path))
 
+    for idx, path in enumerate(top_bottoms.tail()['paths']):
+        plt.subplot(2,5,idx+6)
+        plt.imshow(plt.imread(path))
+    plt.show()
+    return np.mean(aps)
 
 
 
@@ -47,15 +58,15 @@ kmeans = pickle.load(open('kmeans.pkl', 'rb'))
 # X_test = preprocessing.normalize(extract_features(kmeans, visual_dict_imgs_test, no_clusters=cluster_sizes))
 # np.savetxt('X_test.txt', X_test)
 # np.savetxt('Y_test.txt', Y_test)
+# np.savetxt('paths_test.txt', paths_test,fmt="%s")
 X_test = np.loadtxt('X_test.txt')
 Y_test = np.loadtxt('Y_test.txt')
+paths_test = np.loadtxt('paths_test.txt',dtype=str)
 
 dfs = []
 for i in range(len(models)):
     preds = models[i].predict(X_test)
     p = np.array(models[i].decision_function(X_test))
-    df = pd.DataFrame(list(zip(preds, Y_test[:, i], preds == Y_test[:, i], p)), columns=['preds', 'truth', 'correct', 'votes'])
+    df = pd.DataFrame(list(zip(preds, Y_test[:, i], preds == Y_test[:, i], p, paths_test)), columns=['preds', 'truth', 'correct', 'votes', 'paths'])
     dfs.append(df)
-    #print(accuracy_score(Y_test[:, i], preds))
-    #print(confusion_matrix(Y_test[:, i], preds))
 print(f"mAP for this setting: {calculate_mAP(dfs)}")
