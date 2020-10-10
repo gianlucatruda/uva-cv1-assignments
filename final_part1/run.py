@@ -50,7 +50,7 @@ def read_and_prepare(labels, desc_type, subdir='img', split=0.4):
     paths = []
     for i in range(len(labels)):
         #image_paths = sorted(glob(f'{os.path.realpath(".")}/img/{10*labels[i]+labels[i]}/*.png'))
-        image_paths = sorted(glob(f'{os.path.realpath(".")}/{subdir}/{labels[i]}/*.png'))
+        image_paths = list(sorted(glob(f'{os.path.realpath(".")}/{subdir}/{labels[i]}/*.png')))
         for ind, path in tqdm(enumerate(image_paths)):
             if desc_type == 'SIFT_RGB':
                 image = cv2.imread(path, cv2.IMREAD_COLOR)
@@ -79,6 +79,9 @@ def run(cluster_size = 400, desc_type='SIFT_GRAY'):
     cluster_size: size of the visual vocabulary
     desc_type: type of descriptor, can be 'SIFT_GRAY', 'SIFT_RGB', 'SURF'
     '''
+
+    print(f"Running {desc_type} with {cluster_size}-sized clusters...\n\n")
+
     # airplane: 1, bird: 2, ship: 9, horse: 7, car: 3
     labels = [1, 2, 9, 7, 3]
     visual_vocab_imgs, visual_dict_imgs, paths, Y = read_and_prepare(labels, desc_type)
@@ -87,18 +90,21 @@ def run(cluster_size = 400, desc_type='SIFT_GRAY'):
     print(f"Visual vocabulary images: {len(visual_vocab_imgs)}")
     print(f"Visual dictionary images: {len(visual_dict_imgs)}")
 
+    print("Clustering with K-means...")
     descriptors = np.vstack(visual_vocab_imgs)
     kmeans = KMeans(n_clusters=cluster_size).fit(descriptors)
     print("K-means completed")
     pickle.dump(kmeans, open(f'{cluster_size}-{desc_type}-kmeans.pkl', 'wb'))
+    print('Saved clusters to pickle file')
 
+    print('Preprocessing...')
     features = extract_features(kmeans, visual_dict_imgs, no_clusters=cluster_size)
     normalized = preprocessing.normalize(features)
 
     hist_visual(normalized[0], paths[0])
 
-    models = [svm.SVC() for _ in labels]
     print('Training binary models')
+    models = [svm.SVC() for _ in labels]
     for i in tqdm(range(len(models))):
         models[i].fit(normalized, Y[:,i])
         pickle.dump(models[i], open(f'{cluster_size}-{desc_type}-svm_{i}.pkl', 'wb'))
@@ -110,7 +116,7 @@ def run(cluster_size = 400, desc_type='SIFT_GRAY'):
     np.savetxt(f'{cluster_size}-{desc_type}-X_test.txt', X_test)
     np.savetxt(f'{cluster_size}-{desc_type}-Y_test.txt', Y_test)
     np.savetxt(f'{cluster_size}-{desc_type}-paths_test.txt', paths_test, fmt="%s")
-
+    print("Test data saved to txt files")
     dfs = []
     for i in range(len(models)):
         preds = models[i].predict(X_test)
@@ -125,5 +131,5 @@ if __name__ == "__main__":
     print('Experiment 1: Cluster sizes')
     #for size in [400, 1000, 4000]:
     #    run(cluster_size=size)
-    run(400, desc_type='SIFT_RGB')
-    #run(400, desc_type='SURF')
+    # run(400, desc_type='SIFT_RGB')
+    run(400, desc_type='SURF')
