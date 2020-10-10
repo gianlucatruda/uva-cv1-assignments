@@ -42,6 +42,7 @@ def read_and_prepare(labels, desc_type, subdir='img', split=0.4):
         sift = cv2.xfeatures2d.SIFT_create()
     elif desc_type == 'SURF':
         surf = cv2.xfeatures2d.SURF_create()
+        surf.setExtended(True)
     else:
         raise NotImplemented("No such descriptor type")
     visual_vocab_imgs = []
@@ -68,7 +69,7 @@ def read_and_prepare(labels, desc_type, subdir='img', split=0.4):
             else:
                 visual_dict_imgs.append(des)
                 paths.append(path)
-                Y.append(binary(labels,i))
+                Y.append(binary(labels, i))
     Y = np.vstack(Y)
     return visual_vocab_imgs, visual_dict_imgs, paths, Y
 
@@ -129,7 +130,7 @@ def run(cluster_size = 400, desc_type='SIFT_GRAY'):
 
 if __name__ == "__main__":
     print('Experiment 1: Cluster sizes')
-    #for size in [400, 1000, 4000]:
-    #    run(cluster_size=size)
-    # run(400, desc_type='SIFT_RGB')
+    for size in [400, 1000, 4000]:
+        run(cluster_size=size)
+    run(400, desc_type='SIFT_RGB')
     run(400, desc_type='SURF')
