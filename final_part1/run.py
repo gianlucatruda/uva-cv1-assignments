@@ -17,7 +17,7 @@ def extract_features(kmeans, points, no_clusters):
     im_features = np.array([np.zeros(no_clusters) for _ in range(len(points))])
     for i in tqdm(range(len(points))):
         for j in range(len(points[i])):
-            feature = points[i][j].reshape(1, 128)
+            feature = points[i][j].reshape(1, -1)  # 128 or 384
             idx = kmeans.predict(feature)
             im_features[i][idx] += 1
     return im_features
@@ -27,7 +27,7 @@ def hist_visual(histogram, path, n_bins=10):
     plt.subplot(1,2,1)
     plt.imshow(plt.imread(path))
     plt.subplot(1,2,2)
-    plt.hist(histogram, bins=n_bins)
+    plt.bar(np.arange(len(histogram)), [x/sum(histogram) for x in histogram])
     plt.show()
 
 
@@ -56,10 +56,14 @@ def read_and_prepare(labels, desc_type, subdir='img', split=0.4):
             if desc_type == 'SIFT_RGB':
                 image = cv2.imread(path, cv2.IMREAD_COLOR)
                 # Concatenation doesn't work since des1, des2 and des3 have different sizes
-                # _, des1 = sift.detectAndCompute(image[:,:,0], None)
-                # _, des2 = sift.detectAndCompute(image[:,:,1], None)
-                # _, des3 = sift.detectAndCompute(image[:,:,2], None)
-                # des = np.hstack([des1, des2, des3])
+                # try:
+                #     _, des1 = sift.detectAndCompute(image[:,:,0], None)
+                #     _, des2 = sift.detectAndCompute(image[:,:,1], None)
+                #     _, des3 = sift.detectAndCompute(image[:,:,2], None)
+                #     m = min([des1.shape[0], des2.shape[0], des3.shape[0]])
+                #     des = np.hstack([des1[:m, :], des2[:m, :], des3[:m, :]])
+                # except AttributeError:
+                #     continue
                 _, des = sift.detectAndCompute(image, None)
             elif desc_type == 'SIFT_GRAY':
                 image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
@@ -102,23 +106,32 @@ def run(cluster_size = 400, desc_type='SIFT_GRAY'):
     print("K-means completed")
     pickle.dump(kmeans, open(f'{cluster_size}-{desc_type}-kmeans.pkl', 'wb'))
     print('Saved clusters to pickle file')
+    #kmeans = pickle.load(open(f'{cluster_size}-{desc_type}-kmeans.pkl', 'rb'))
 
     print('Preprocessing...')
     features = extract_features(kmeans, visual_dict_imgs, no_clusters=cluster_size)
-    normalized = preprocessing.normalize(features)
 
-    hist_visual(normalized[0], paths[0])
+    # histogram for one image
+    hist_visual(features[0], paths[0])
+
+    # overall histogram per label
+    for i in range(0, 1500, 300):
+        plt.subplot(5, 1, i // 300 + 1)
+        features_per_label = features[i:i+300]
+        features_per_label = np.sum(features_per_label, axis=0)
+        plt.bar(np.arange(len(features_per_label)), [x/sum(features_per_label) for x in features_per_label])
+    plt.show()
 
     print('Training binary models')
     models = [svm.SVC() for _ in labels]
     for i in tqdm(range(len(models))):
-        models[i].fit(normalized, Y[:,i])
+        models[i].fit(features, Y[:,i])
         pickle.dump(models[i], open(f'{cluster_size}-{desc_type}-svm_{i}.pkl', 'wb'))
 
     # prepare files for evaluation
     print('Preparing test data')
     _, visual_dict_imgs_test, paths_test, Y_test = read_and_prepare(labels, desc_type, subdir='test', split=0)
-    X_test = preprocessing.normalize(extract_features(kmeans, visual_dict_imgs_test, no_clusters=cluster_size))
+    X_test = extract_features(kmeans, visual_dict_imgs_test, no_clusters=cluster_size)
     np.savetxt(f'{cluster_size}-{desc_type}-X_test.txt', X_test)
     np.savetxt(f'{cluster_size}-{desc_type}-Y_test.txt', Y_test)
     np.savetxt(f'{cluster_size}-{desc_type}-paths_test.txt', paths_test, fmt="%s")
@@ -134,8 +147,9 @@ def run(cluster_size = 400, desc_type='SIFT_GRAY'):
 
 
 if __name__ == "__main__":
-    print('Experiment 1: Cluster sizes')
-    for size in [400, 1000, 4000]:
-        run(cluster_size=size)
-    run(400, desc_type='SIFT_RGB')
-    run(400, desc_type='SURF')
+    run(400)
+    #print('Experiment 1: Cluster sizes')
+    #for size in [400, 1000, 4000]:
+    #    run(cluster_size=size)
+    #run(400, desc_type='SIFT_RGB')
+    #run(400, desc_type='SURF')
