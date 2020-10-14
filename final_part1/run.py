@@ -55,6 +55,11 @@ def read_and_prepare(labels, desc_type, subdir='img', split=0.4):
         for ind, path in tqdm(enumerate(image_paths)):
             if desc_type == 'SIFT_RGB':
                 image = cv2.imread(path, cv2.IMREAD_COLOR)
+                # Concatenation doesn't work since des1, des2 and des3 have different sizes
+                # _, des1 = sift.detectAndCompute(image[:,:,0], None)
+                # _, des2 = sift.detectAndCompute(image[:,:,1], None)
+                # _, des3 = sift.detectAndCompute(image[:,:,2], None)
+                # des = np.hstack([des1, des2, des3])
                 _, des = sift.detectAndCompute(image, None)
             elif desc_type == 'SIFT_GRAY':
                 image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
