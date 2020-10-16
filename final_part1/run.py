@@ -55,16 +55,14 @@ def read_and_prepare(labels, desc_type, subdir='img', split=0.4):
         for ind, path in tqdm(enumerate(image_paths)):
             if desc_type == 'SIFT_RGB':
                 image = cv2.imread(path, cv2.IMREAD_COLOR)
-                # Concatenation doesn't work since des1, des2 and des3 have different sizes
-                # try:
-                #     _, des1 = sift.detectAndCompute(image[:,:,0], None)
-                #     _, des2 = sift.detectAndCompute(image[:,:,1], None)
-                #     _, des3 = sift.detectAndCompute(image[:,:,2], None)
-                #     m = min([des1.shape[0], des2.shape[0], des3.shape[0]])
-                #     des = np.hstack([des1[:m, :], des2[:m, :], des3[:m, :]])
-                # except AttributeError:
-                #     continue
-                _, des = sift.detectAndCompute(image, None)
+                try:
+                    _, des1 = sift.detectAndCompute(image[:,:,0], None)
+                    _, des2 = sift.detectAndCompute(image[:,:,1], None)
+                    _, des3 = sift.detectAndCompute(image[:,:,2], None)
+                    des = np.vstack([des1, des2, des3])
+                except ValueError:
+                    continue
+                #_, des = sift.detectAndCompute(image, None)
             elif desc_type == 'SIFT_GRAY':
                 image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
                 _, des = sift.detectAndCompute(image, None)
@@ -147,9 +145,10 @@ def run(cluster_size = 400, desc_type='SIFT_GRAY'):
 
 
 if __name__ == "__main__":
-    run(400)
-    #print('Experiment 1: Cluster sizes')
-    #for size in [400, 1000, 4000]:
-    #    run(cluster_size=size)
-    #run(400, desc_type='SIFT_RGB')
-    #run(400, desc_type='SURF')
+    print('Experiment 1: Cluster sizes')
+    for size in [400, 1000, 4000]:
+        run(cluster_size=size)
+    print('Experiment 2: RGB SIFT')
+    run(400, desc_type='SIFT_RGB')
+    print('Experiment 3: SURF')
+    run(400, desc_type='SURF')
