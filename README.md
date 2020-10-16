@@ -1,8 +1,9 @@
-# uva-cv1-assignments
-Computer Vision 1 assingments for group M05
+# Computer Vision 1
+University of Amsterdam (UvA) Computer Vision 1 assignments 2020.
 
-- [x] Lab 1
-- [x] Lab 2
-- [x] Lab 3
-- [x] Lab 4
-- [ ] Projects
+<img src="https://i.imgur.com/6rUGc4d.png" width=300px>
+
+## Group M05
+- Gianluca Truda
+- Serafim Korovin
+- Britt Van Leeuwen
